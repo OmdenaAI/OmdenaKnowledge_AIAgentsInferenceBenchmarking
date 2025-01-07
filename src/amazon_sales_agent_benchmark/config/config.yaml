@@ -1,0 +1,52 @@
+model:
+  provider: "huggingface"
+  name: "HuggingFaceH4/zephyr-7b-beta"
+  embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+  temperature: 0.01
+  max_length: 4096
+  max_new_tokens: 512
+  top_p: 0.95
+  inference_endpoint: "https://api-inference.huggingface.co/models/"
+  retry_config:
+    max_retries: 3
+    min_wait: 4
+    max_wait: 60
+    backoff_factor: 2
+
+required_columns:
+  - product_id
+  - product_name
+  - category
+  - rating
+  - rating_count
+  - discounted_price
+  - actual_price
+  - discount_percentage
+
+paths:
+  data_dir: "data"
+  questions_data: "short_amazon_sales_examples.jsonl"
+  amazon_data: "amazon_cleaned.csv"
+
+logging:
+  file: "logs/amazon_query.log"
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+benchmarks:
+  iterations: 3
+  metrics:
+    - bert_score
+    - api_calls
+    - latency 
+
+data:    # Overlap between chunks for context continuity
+  required_columns:
+    - product_id
+    - product_name
+    - category
+    - rating
+    - rating_count
+    - discounted_price
+    - actual_price
+    - discount_percentage 

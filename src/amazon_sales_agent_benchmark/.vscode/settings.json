@@ -1,0 +1,30 @@
+{
+    "python.defaultInterpreterPath": "~/anaconda3/envs/amazon_query/bin/python",
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestArgs": [
+        "tests",
+        "-v",
+        "--cov=src",
+        "--cov-report=term-missing",
+        "--cov-report=html"
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}"
+    ],
+    "python.envFile": "${workspaceFolder}/.env",
+    "python.testing.cwd": "${workspaceFolder}",
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "always"
+        }
+    },
+    "isort.args": [
+        "--profile",
+        "black"
+    ],
+    "python.debugger.debugpy.enabled": true
+}

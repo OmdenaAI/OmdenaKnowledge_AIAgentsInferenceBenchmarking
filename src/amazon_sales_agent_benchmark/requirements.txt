@@ -1,0 +1,39 @@
+# Core dependencies
+langchain>=0.1.0
+tenacity>=8.2.0
+chromadb>=0.4.18
+pyyaml>=6.0.1
+python-dotenv>=1.0.0
+
+# Agent frameworks
+crewai>=0.1.0
+autogen>=0.2.0
+langgraph>=0.0.1
+
+# LLM providers
+transformers>=4.30.0
+langchain-huggingface>=0.0.3
+numpy>=1.24.0
+openai>=1.0.0
+anthropic>=0.3.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-mock>=3.11.1
+
+# Code quality
+black>=23.7.0
+isort>=5.12.0
+flake8>=6.1.0
+pre-commit>=3.3.3
+
+# Metrics
+bert-score>=0.3.13
+
+# Add seaborn for visualization
+seaborn>=0.12.0
+
+# Keep existing requirements
+pandas>=2.0.0
+matplotlib>=3.7.0  # Seaborn depends on matplotlib 

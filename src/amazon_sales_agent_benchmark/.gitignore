@@ -1,0 +1,9 @@
+# Coverage reports
+__pycache__/
+htmlcov/
+.coverage
+coverage.xml
+simple_agent/
+logs/ 
+.cache/
+.DS_Store/
