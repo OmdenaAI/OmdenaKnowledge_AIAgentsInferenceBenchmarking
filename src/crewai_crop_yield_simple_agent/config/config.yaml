@@ -1,0 +1,16 @@
+data:
+  paths:
+    crop_data: "data/crop+yield+predictiondata_crop_yield.csv"
+    questions: "data/crop_yield_questions_10.jsonl"
+    env: "~/src/python/.env"
+    metrics: "output/metrics"
+
+model:
+  name: "llama-3.1-70b-versatile"
+  temperature: 0.01
+  max_tokens: 1000
+
+benchmark:
+  iterations: 3
+  random_few_shot: false 
+  num_few_shot: 5
