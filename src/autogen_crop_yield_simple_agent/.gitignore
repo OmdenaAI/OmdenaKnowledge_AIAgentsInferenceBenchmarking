@@ -32,12 +32,6 @@ ENV/
 *.log
 logs/
 
-# Output
-output/
-metrics/
-*.png
-*.json
-
 # IDE
 .idea/
 .vscode/

@@ -1,0 +1,76 @@
+{
+  "model_info": {
+    "name": "llama-3.1-70b-versatile",
+    "temperature": 0.01,
+    "max_tokens": 1000,
+    "num_few_shot": 5,
+    "random_few_shot": false
+  },
+  "performance_metrics": {
+    "mae": 1660.5,
+    "mape": 7.39446804003398,
+    "rmse": 1971.494331718963
+  },
+  "runtime_metrics": {
+    "total_runtime": 100.52886867523193,
+    "avg_runtime": 33.50962289174398,
+    "total_llm_calls": 30,
+    "avg_latency": 0.10822827816009521
+  },
+  "token_metrics": {
+    "total_prompt_tokens": 17007,
+    "total_response_tokens": 0,
+    "total_tokens": 17007,
+    "avg_tokens_per_call": 5669.0
+  },
+  "memory_metrics": {
+    "peak_memory_mb": 277.671875,
+    "avg_memory_delta_mb": 1.4322916666666667
+  },
+  "iterations": [
+    {
+      "iteration": 1,
+      "runtime": 21.794018030166626,
+      "memory_delta": 4.203125,
+      "peak_memory": 277.578125,
+      "llm_calls": 10,
+      "avg_latency": 0.2989490509033203,
+      "prompt_tokens": 5669,
+      "response_tokens": 0,
+      "total_tokens": 5669,
+      "mae": 1660.5,
+      "mape": 7.39446804003398,
+      "rmse": 1971.494331718963
+    },
+    {
+      "iteration": 2,
+      "runtime": 39.15412187576294,
+      "memory_delta": 0.046875,
+      "peak_memory": 277.625,
+      "llm_calls": 10,
+      "avg_latency": 0.012729954719543458,
+      "prompt_tokens": 5669,
+      "response_tokens": 0,
+      "total_tokens": 5669,
+      "mae": 1660.5,
+      "mape": 7.39446804003398,
+      "rmse": 1971.494331718963
+    },
+    {
+      "iteration": 3,
+      "runtime": 39.58072876930237,
+      "memory_delta": 0.046875,
+      "peak_memory": 277.671875,
+      "llm_calls": 10,
+      "avg_latency": 0.013005828857421875,
+      "prompt_tokens": 5669,
+      "response_tokens": 0,
+      "total_tokens": 5669,
+      "mae": 1660.5,
+      "mape": 7.39446804003398,
+      "rmse": 1971.494331718963
+    }
+  ],
+  "timestamp": "2025-01-16T09:46:59.840475",
+  "framework": "autogen"
+}
