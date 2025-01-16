@@ -1,0 +1,20 @@
+name: autogen_crop_yield
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10.13
+  - pip=24.0
+  - numpy=1.26.4
+  - pandas=2.2.0
+  - matplotlib=3.8.2
+  - seaborn=0.13.2
+  - pyyaml=6.0.1
+  - psutil=5.9.8
+  - pip:
+      - pyautogen==0.2.2
+      - groq
+      - transformers==4.38.2
+      - huggingface-hub==0.20.3
+      - tokenizers==0.15.2
+      - python-dotenv==1.0.0
