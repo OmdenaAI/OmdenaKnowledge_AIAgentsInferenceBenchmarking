@@ -152,14 +152,11 @@ class PredictionAgent(Agent):
 
     def _build_prediction_context(self, features: dict, crop_data: pd.DataFrame, yield_stats: str) -> str:
         if self.random_few_shot:
-            historical_phrase = f"Random historical records for {features['crop']}:\n"
-
             # Get random indices directly - no need for similarity scores
             selected_indices = random.sample(range(len(crop_data)), min(self.num_few_shot, len(crop_data)))
             selected_rows = crop_data.iloc[selected_indices]
             
         else:
-            historical_phrase = f"Most similar historical records for {features['crop']} (ordered by relevance):\n"
             # Only calculate similarity scores if we need them
             similarity_scores = (
                 abs(crop_data['Precipitation (mm day-1)'] - features['precipitation']) / crop_data['Precipitation (mm day-1)'] +
