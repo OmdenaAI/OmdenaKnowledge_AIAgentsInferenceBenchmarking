@@ -90,7 +90,7 @@ num_few_shot: 5 # Number of examples per prediction
 
 ## Performance Metrics
 
-### Prediction Performance (example_performance.png)
+### Prediction Performance
 ![Performance Metrics](docs/images/example_performance.png)
 
 Tracks three key error metrics across iterations:
@@ -98,7 +98,7 @@ Tracks three key error metrics across iterations:
 - **MAPE (Mean Absolute Percentage Error)**: Percentage error relative to actual yields
 - **RMSE (Root Mean Square Error)**: Square root of average squared errors
 
-### Runtime Performance (example_runtime.png)
+### Runtime Performance
 ![Runtime Metrics](docs/images/example_runtime.png)
 
 Monitors system performance:
