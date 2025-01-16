@@ -7,42 +7,42 @@
   "iterations": [
     {
       "iteration": 1,
-      "runtime": 2.9520063400268555,
-      "memory_delta": 79.5,
-      "peak_memory": 450.359375,
+      "runtime": 41.40319490432739,
+      "memory_delta": 89.28125,
+      "peak_memory": 458.015625,
       "llm_calls": 10,
-      "avg_latency": 0.22662765979766847,
-      "total_prompt_tokens": 4121,
-      "tokens_per_call": 412.1,
-      "mae": 19742.8,
-      "mape": 16.324332052010543,
-      "rmse": 58729.56006135241
+      "avg_latency": 0.3275799036026001,
+      "total_prompt_tokens": 5436,
+      "tokens_per_call": 543.6,
+      "mae": 1573.0,
+      "mape": 7.124843927635259,
+      "rmse": 1837.6435998310444
     },
     {
       "iteration": 2,
-      "runtime": 2.172814130783081,
-      "memory_delta": 30.5625,
-      "peak_memory": 481.015625,
+      "runtime": 41.06332015991211,
+      "memory_delta": 29.375,
+      "peak_memory": 487.390625,
       "llm_calls": 10,
-      "avg_latency": 0.18929717540740967,
-      "total_prompt_tokens": 4121,
-      "tokens_per_call": 412.1,
-      "mae": 19763.1,
-      "mape": 16.631760539429802,
-      "rmse": 58730.22985226603
+      "avg_latency": 0.28867971897125244,
+      "total_prompt_tokens": 5436,
+      "tokens_per_call": 543.6,
+      "mae": 1573.0,
+      "mape": 7.124843927635259,
+      "rmse": 1837.6435998310444
     },
     {
       "iteration": 3,
-      "runtime": 4.430221080780029,
-      "memory_delta": 19.359375,
-      "peak_memory": 500.375,
+      "runtime": 42.464982986450195,
+      "memory_delta": 33.671875,
+      "peak_memory": 521.0625,
       "llm_calls": 10,
-      "avg_latency": 0.41660513877868655,
-      "total_prompt_tokens": 4121,
-      "tokens_per_call": 412.1,
-      "mae": 19831.4,
-      "mape": 16.83746420739134,
-      "rmse": 58730.89960148746
+      "avg_latency": 0.41077618598937987,
+      "total_prompt_tokens": 5436,
+      "tokens_per_call": 543.6,
+      "mae": 1567.0,
+      "mape": 7.106388067899793,
+      "rmse": 1836.0266882591875
     }
   ],
   "dataset_stats": {
@@ -79,5 +79,5 @@
       }
     }
   },
-  "timestamp": "2025-01-13 09:47:18.930634"
+  "timestamp": "2025-01-16 09:06:16.002802"
 }

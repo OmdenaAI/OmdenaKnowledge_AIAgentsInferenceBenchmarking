@@ -4,6 +4,7 @@ from typing import Optional, List, Dict, Any, Annotated, Tuple
 from pydantic import Field, ConfigDict
 from .data_preparation_task import DataPreparationTask
 from .question_loading_task import QuestionLoadingTask
+from utils import RateLimiter
 import logging
 import time
 import groq
@@ -59,18 +60,11 @@ class PredictionTask(Task):
             
         if not self.questions_task.questions:
             raise ValueError("No questions available from questions task")
+        
+        rate_limiter = RateLimiter(max_calls=4, pause_time=20)
 
         for prompt, completion in self.questions_task.questions:
-            try:
-                prediction = self.agent.predict_yield(
-                    prompt=prompt,
-                    completion=completion,
-                    dataset=self.prep_task.dataset
-                )
-            except groq.RateLimitError as e:
-                wait_time = 120  # 2 minutes
-                self.logger.warning(f"Rate limit hit, waiting {wait_time} seconds...")
-                time.sleep(wait_time)
+            with rate_limiter:
                 prediction = self.agent.predict_yield(
                     prompt=prompt,
                     completion=completion,

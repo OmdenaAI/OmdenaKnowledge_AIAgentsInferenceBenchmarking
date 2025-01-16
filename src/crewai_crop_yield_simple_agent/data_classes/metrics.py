@@ -127,6 +127,28 @@ class BenchmarkMetrics(BaseModel):
             timestamp=datetime.now()
         )
 
+    def _print_benchmark_summary(self) -> None:
+        # Print summary with metrics
+        print("\nBenchmark Summary:")
+        print("=" * 50)
+        print(f"Model Configuration:")
+        print(f"- Name: {self.model_name}")
+        print(f"- Temperature: {self.model_temperature}")
+        print(f"- Max Tokens: {self.model_max_tokens}")
+        print(f"\nFew-Shot Configuration:")
+        print(f"- Random Selection: {self.random_few_shot}")
+        print(f"- Number of Examples: {self.num_few_shot}")
+        print(f"\nPerformance Metrics:")
+        print(f"- Total Iterations: {len(self.iterations)}")
+        print(f"- Total Runtime: {self.avg_runtime:.2f} seconds")
+        print(f"- Total LLM Calls: {self.total_llm_calls}")
+        print(f"- Average API Latency: {self.avg_latency:.2f} seconds")
+        print(f"- Average Tokens/Call: {self.avg_token_count:.1f}")
+        print(f"- Total Tokens: {self.total_token_count}")
+        print(f"- Average MAE: {self.avg_mae:.2f}")
+        print(f"- Average MAPE: {self.avg_mape:.2f}%")
+        print(f"- Average RMSE: {self.avg_rmse:.2f}") 
+
     def set_dataset_stats(self, dataset: 'CropDataset') -> None:
         """Store dataset statistics"""
         self.dataset_stats = dataset.summary['crop_distribution']

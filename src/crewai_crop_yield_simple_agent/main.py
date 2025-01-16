@@ -160,9 +160,6 @@ def run_benchmark(config: dict, llm: ChatGroq, logger: logging.Logger) -> Benchm
         # Store dataset stats only on first iteration
         if i == 0:
             benchmark.set_dataset_stats(results['dataset'])
-        elif i % 4 == 0:
-            # Help t0 minimize rate limiting
-            time.sleep(60)
         
         # Calculate iteration metrics
         end_time = time.time()
@@ -175,16 +172,16 @@ def run_benchmark(config: dict, llm: ChatGroq, logger: logging.Logger) -> Benchm
             peak_memory=get_memory_usage(),
             llm_calls=results['llm_calls'],
             avg_latency=results['api_latency'],
-            total_prompt_tokens=results['total_prompt_tokens'],  # Get directly from results
-            tokens_per_call=results['tokens_per_call'],         # Get directly from results
+            total_prompt_tokens=results['total_prompt_tokens'],
+            tokens_per_call=results['tokens_per_call'],
             mae=results['mae'],
             mape=results['mape'],
             rmse=results['rmse']
         )
         benchmark.iterations.append(iteration_metrics)
 
-        # Sleep in between iterations due to rate limits
-        time.sleep(60)
+        # Help to minimize rate limiting
+        time.sleep(20)
 
     # Save benchmark results
     metrics_dir = Path(config['data']['paths']['metrics'])
@@ -197,24 +194,3 @@ if __name__ == "__main__":
     llm = get_llm(config)
     logger = setup_logging()
     benchmark_results = run_benchmark(config, llm, logger)
-    
-    # Print summary with clearer metrics
-    print("\nBenchmark Summary:")
-    print("=" * 50)
-    print(f"Model Configuration:")
-    print(f"- Name: {benchmark_results.model_name}")
-    print(f"- Temperature: {benchmark_results.model_temperature}")
-    print(f"- Max Tokens: {benchmark_results.model_max_tokens}")
-    print(f"\nFew-Shot Configuration:")
-    print(f"- Random Selection: {benchmark_results.random_few_shot}")
-    print(f"- Number of Examples: {benchmark_results.num_few_shot}")
-    print(f"\nPerformance Metrics:")
-    print(f"- Total Iterations: {len(benchmark_results.iterations)}")
-    print(f"- Total Runtime: {benchmark_results.avg_runtime:.2f} seconds")
-    print(f"- Total LLM Calls: {benchmark_results.total_llm_calls}")
-    print(f"- Average API Latency: {benchmark_results.avg_latency:.2f} seconds")
-    print(f"- Average Tokens/Call: {benchmark_results.avg_token_count:.1f}")
-    print(f"- Total Tokens: {benchmark_results.total_token_count}")
-    print(f"- Average MAE: {benchmark_results.avg_mae:.2f}")
-    print(f"- Average MAPE: {benchmark_results.avg_mape:.2f}%")
-    print(f"- Average RMSE: {benchmark_results.avg_rmse:.2f}") 
