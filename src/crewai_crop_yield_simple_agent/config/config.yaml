@@ -6,7 +6,7 @@ data:
     metrics: "output/metrics"
 
 model:
-  name: "llama-3.1-70b-versatile"
+  name: "llama-3.3-70b-versatile"
   temperature: 0.01
   max_tokens: 1000
 

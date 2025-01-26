@@ -1,5 +1,5 @@
 from crewai import Agent
-from data_classes import AgentMetricsConfig, CropDataset
+from simple_agent_common.data_classes import AgentMetricsConfig, CropDataset
 from typing import Any, Dict, Annotated, Optional
 import pandas as pd
 import logging

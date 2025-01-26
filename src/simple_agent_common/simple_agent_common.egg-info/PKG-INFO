@@ -1,0 +1,6 @@
+Metadata-Version: 2.2
+Name: simple_agent_common
+Version: 0.1.0
+Summary: Common utilities and data classes for simple agent projects
+Requires-Python: >=3.8
+Requires-Dist: pydantic>=2.0.0

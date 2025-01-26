@@ -6,10 +6,6 @@ from .metrics import (
     IterationMetrics
 )
 from .configs import (
-    PathConfig,
-    ModelConfig,
-    AppConfig,
-    TaskConfig,
     AgentMetricsConfig,
     TaskMetricsConfig
 )
@@ -22,10 +18,6 @@ __all__ = [
     'BaseMetrics',
     'BenchmarkMetrics',
     'IterationMetrics',
-    'PathConfig',
-    'ModelConfig',
-    'AppConfig',
-    'TaskConfig',
     'AgentMetricsConfig',
     'TaskMetricsConfig',
     'CropDataset',

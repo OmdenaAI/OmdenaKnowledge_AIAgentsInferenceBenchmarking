@@ -19,4 +19,4 @@ dependencies:
       - transformers==4.38.2
       - huggingface-hub==0.20.3
       - tokenizers==0.15.2
-      - "-e ../simple_agent_common/."
+      - "-e ../simple_agent_common/."  # Added trailing /. to ensure pip recognizes it as a directory 

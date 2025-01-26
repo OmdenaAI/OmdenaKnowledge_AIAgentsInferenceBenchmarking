@@ -1,10 +1,10 @@
 from crewai import Task
-from data_classes import TaskMetricsConfig, CropPrediction
+from simple_agent_common.data_classes import TaskMetricsConfig, CropPrediction
 from typing import Optional, List, Dict, Any, Annotated, Tuple
 from pydantic import Field, ConfigDict
 from .data_preparation_task import DataPreparationTask
 from .question_loading_task import QuestionLoadingTask
-from utils import RateLimiter
+from simple_agent_common.utils import RateLimiter
 import logging
 import time
 import groq

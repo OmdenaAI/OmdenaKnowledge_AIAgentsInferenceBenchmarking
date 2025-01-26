@@ -4,39 +4,50 @@ A benchmarking framework for evaluating Large Language Model (LLM) performance o
 
 ## System Architecture
 
-The system uses a modular architecture with three main components:
+The system uses a modular architecture with two main components:
 
-1. **Agents**
-   - `PredictionAgent`: Handles yield predictions using LLM
-   - `DataPreparationAgent`: Manages dataset preprocessing
-   - `TokenCounter`: Protocol for token counting implementation
+1. **Core Application Components**
+   - **Agents**
+     - `PredictionAgent`: Handles yield predictions using LLM
+     - `DataPreparationAgent`: Manages dataset preprocessing
+   - **Tasks**
+     - `PredictionTask`: Orchestrates prediction workflow
+     - `DataPreparationTask`: Handles data cleaning and preparation
+     - `QuestionLoadingTask`: Manages few-shot example selection
 
-2. **Tasks**
-   - `PredictionTask`: Orchestrates prediction workflow
-   - `DataPreparationTask`: Handles data cleaning and preparation
-   - `QuestionLoadingTask`: Manages few-shot example selection
+2. **Shared Components** (from simple_agent_common)
+   - **Data Classes**
+     - `CropDataset`: Encapsulates crop yield data and statistics
+     - `CropPrediction`: Represents individual predictions
+     - `Metrics`: Various metric tracking classes (LLM, Prediction, Benchmark)
+   - **Utilities**
+     - `TokenCounter`: Protocol for token counting implementation
+     - Other shared utilities for data processing and metrics tracking
 
-3. **Data Classes**
-   - `CropDataset`: Encapsulates crop yield data and statistics
-   - `CropPrediction`: Represents individual predictions
-   - `Metrics`: Various metric tracking classes (LLM, Prediction, Benchmark)
+## Dependencies
+
+The application relies on the following key dependencies:
+- `simple_agent_common`: Common utilities and data classes shared across agent projects
+- `crewai`: Framework for AI agent orchestration
+- `langchain`: LLM integration tools
 
 ## Configuration (config.yaml)
-yaml
+```yaml
 data:
-paths:
-crop_data: "data/crop+yield+predictiondata_crop_yield.csv" # Source dataset
-questions: "data/crop_yield_questions_10.jsonl" # Test questions
-env: "~/src/python/.env" # Environment variables
-metrics: "output/metrics" # Output directory
+  paths:
+    crop_data: "data/crop+yield+predictiondata_crop_yield.csv" # Source dataset
+    questions: "data/crop_yield_questions_10.jsonl" # Test questions
+    env: "~/src/python/.env" # Environment variables
+    metrics: "output/metrics" # Output directory
 model:
-name: "llama-3.1-70b-versatile" # LLM model identifier
-temperature: 0.01 # Randomness control (lower = more deterministic)
-max_tokens: 1000 # Maximum response length
+  name: "llama-3.1-70b-versatile" # LLM model identifier
+  temperature: 0.01 # Randomness control (lower = more deterministic)
+  max_tokens: 1000 # Maximum response length
 benchmark:
-iterations: 3 # Number of test iterations
-random_few_shot: false # Use random vs similarity-based examples
-num_few_shot: 5 # Number of examples per prediction
+  iterations: 3 # Number of test iterations
+  random_few_shot: false # Use random vs similarity-based examples
+  num_few_shot: 5 # Number of examples per prediction
+```
 
 ## Performance Metrics
 
@@ -59,9 +70,11 @@ Monitors system performance:
 
 ## Metrics Output
 
-The system generates detailed JSON metrics:
-```json
+The system generates detailed JSON metrics for performance analysis and benchmarking. These metrics are standardized across agent projects using the common data structures from `simple_agent_common`.
 
+Example output:
+```json
+{
   "model_name": "llama-3.1-70b-versatile",
   "model_temperature": 0.01,
   "model_max_tokens": 1000,

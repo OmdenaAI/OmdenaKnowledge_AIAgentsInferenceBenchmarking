@@ -10,7 +10,7 @@ import psutil
 import logging
 from agents import PredictionAgent, DataPreparationAgent
 from tasks import PredictionTask, DataPreparationTask, QuestionLoadingTask
-from data_classes import BenchmarkMetrics, IterationMetrics
+from simple_agent_common.data_classes import BenchmarkMetrics, IterationMetrics
 from typing import Dict, Any, Optional
 from transformers import AutoTokenizer
 from agents.token_counter import TokenCounter

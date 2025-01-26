@@ -1,5 +1,5 @@
 from crewai import Task
-from data_classes import TaskMetricsConfig
+from simple_agent_common.data_classes import TaskMetricsConfig
 from typing import Optional, List, Dict, Any, Tuple, Annotated
 from pydantic import Field, ConfigDict
 import json

@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "simple_agent_common"
+version = "0.1.0"
+description = "Common utilities and data classes for simple agent projects"
+requires-python = ">=3.8"
+dependencies = [
+    "pydantic>=2.0.0",
+]
+
+[tool.setuptools]
+packages = ["simple_agent_common", "simple_agent_common.data_classes", "simple_agent_common.utils"]
+package-dir = {"simple_agent_common" = "."} 

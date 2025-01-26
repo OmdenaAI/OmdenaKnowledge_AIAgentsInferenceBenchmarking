@@ -1,5 +1,5 @@
 from crewai import Agent
-from data_classes import AgentMetricsConfig, CropDataset, CropPrediction
+from simple_agent_common.data_classes import AgentMetricsConfig, CropDataset, CropPrediction
 from typing import Any, Dict, Annotated, Optional, List, Callable, Protocol
 from pydantic import Field, ConfigDict
 import pandas as pd
@@ -9,7 +9,6 @@ import time
 import random
 from tenacity import retry, stop_after_attempt, wait_exponential
 from .token_counter import TokenCounter
-from utils import retry_with_exponential_backoff
 
 class PredictionAgent(Agent):
     model_config = ConfigDict(
@@ -72,8 +71,6 @@ class PredictionAgent(Agent):
         wait=wait_exponential(multiplier=1, min=4, max=10),
         reraise=True
     )
-
-    @retry_with_exponential_backoff(max_retries=5, base_delay=4, max_delay=10)
     def predict_yield(self, prompt: str, completion: str, dataset: CropDataset) -> CropPrediction:
 
         try:

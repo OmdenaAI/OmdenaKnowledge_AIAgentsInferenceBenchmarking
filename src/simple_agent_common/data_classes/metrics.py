@@ -62,33 +62,6 @@ class PredictionMetrics(BaseMetrics):
         self.mape = np.mean(np.abs((predicted - actual) / actual)) * 100
         self.rmse = np.sqrt(np.mean((predicted - actual) ** 2))
 
-    def plot_performance(self, metrics_dir: str, framework: str) -> None:
-        # Set seaborn style globally
-        sns.set_style("whitegrid")  # Use seaborn's whitegrid style
-        
-        # Create figure and axis
-        plt.figure(figsize=(10, 6))
-        
-        # Get actual and predicted values
-        actual = [p[1] for p in self.predictions]
-        predicted = [p[0] for p in self.predictions]
-        
-        # Create scatter plot
-        plt.scatter(actual, predicted, alpha=0.5)
-        
-        # Add perfect prediction line
-        min_val = min(min(actual), min(predicted))
-        max_val = max(max(actual), max(predicted))
-        plt.plot([min_val, max_val], [min_val, max_val], 'r--', label='Perfect Prediction')
-        
-        plt.xlabel('Actual Yield')
-        plt.ylabel('Predicted Yield')
-        plt.title(f'Actual vs Predicted Yield ({framework})\nMAE: {self.mae:.2f}, RMSE: {self.rmse:.2f}')
-        plt.legend()
-        
-        # Save plot
-        plt.savefig(os.path.join(metrics_dir, f'{framework}_performance.png'))
-        plt.close()
 
 class IterationMetrics(BaseModel):
     """Metrics for a single iteration"""

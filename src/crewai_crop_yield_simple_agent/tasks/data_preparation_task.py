@@ -1,6 +1,6 @@
 from pydantic import Field, ConfigDict, PrivateAttr
 from crewai import Task
-from data_classes import TaskMetricsConfig, CropDataset
+from simple_agent_common.data_classes import TaskMetricsConfig, CropDataset
 from typing import Optional, Dict, Any, Annotated
 import logging
 
