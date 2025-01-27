@@ -32,13 +32,39 @@ The system uses a modular architecture with several key components:
 
 3. **Shared Components** (simple_agent_common)
    - Data Classes
-     - `BenchmarkMetrics`: Overall benchmark statistics
+     - `BenchmarkMetrics`: Overall benchmark statistics and saving functionality
+       - Stores model configuration
+       - Manages iteration results
+       - Handles metrics file saving
      - `IterationMetrics`: Per-iteration measurements
+       - Runtime tracking
+       - Memory statistics
+       - LLM call metrics
+       - Token usage
+       - Prediction accuracy
      - `PredictionMetrics`: Prediction accuracy metrics
-   - Common utilities
+       - Stores actual vs predicted values
+       - Calculates MAE, MAPE, RMSE
+       - Manages prediction statistics
+
+   - Common Utilities
      - `RateLimiter`: Controls API call frequency
-     - Retry logic with exponential backoff (via tenacity)
-     - Path management
+       - Max calls configuration
+       - Pause time management
+       - Context manager for rate limiting
+     - `load_config()`: Configuration management
+       - YAML file loading
+       - Configuration validation
+     - `load_env_vars()`: Environment setup
+       - Loads .env files
+       - Sets up API keys
+     - `setup_logging()`: Logging configuration
+       - Framework-specific logging
+       - Debug and error tracking
+     - `MemoryManager`: Memory tracking
+       - Peak memory monitoring
+       - Memory delta calculations
+       - Process memory statistics
 
 ### Data Flow
 
@@ -201,3 +227,40 @@ The system generates detailed JSON metrics:
   "timestamp": "2025-01-16T09:46:59.840475",
   "framework": "autogen"
 }
+```
+
+### Usage Examples
+
+```python
+# Rate limiting
+with rate_limiter:
+    prediction_result = agents['prediction_agent'].predict_yield(
+        features=features,
+        context=context
+    )
+
+# Metrics handling
+benchmark = BenchmarkMetrics(config=config)
+iteration_result = IterationMetrics(
+    iteration=iteration+1,
+    runtime=runtime,
+    memory_delta=memory_delta,
+    peak_memory=peak_memory,
+    llm_calls=llm_calls,
+    avg_latency=avg_latency,
+    total_prompt_tokens=total_prompt_tokens,
+    tokens_per_call=tokens_per_call,
+    mae=prediction_metrics.mae,
+    mape=prediction_metrics.mape,
+    rmse=prediction_metrics.rmse
+)
+
+# Configuration and setup
+config = load_config()
+load_env_vars(config)
+logger = setup_logging(framework_name="autogen")
+
+# Memory management
+memory_manager = MemoryManager()
+memory_manager.start_tracking()
+memory_stats = memory_manager.get_memory_stats()

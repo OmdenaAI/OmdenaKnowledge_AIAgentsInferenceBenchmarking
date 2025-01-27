@@ -11,63 +11,12 @@ import logging
 from agents import PredictionAgent, DataPreparationAgent
 from tasks import PredictionTask, DataPreparationTask, QuestionLoadingTask
 from simple_agent_common.data_classes import BenchmarkMetrics, IterationMetrics
+from simple_agent_common.utils import MemoryManager, load_env_vars, load_config, setup_logging
 from typing import Dict, Any, Optional
 from transformers import AutoTokenizer
 from agents.token_counter import TokenCounter
 
-def setup_logging(
-    log_file: Optional[str] = None,
-    log_level: str = "INFO",
-    log_format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-) -> logging.Logger:
-    """
-    Configure logging for the application.
-    
-    Args:
-        log_file: Path to log file (optional)
-        log_level: Logging level (default: INFO)
-        log_format: Format for log messages
-        
-    Returns:
-        logging.Logger: Configured logger instance
-    """
-    # Create logger
-    logger = logging.getLogger("crop_yield_predictor")
-    logger.setLevel(getattr(logging, log_level.upper()))
-    logger.propagate = False
-
-    # Create formatter
-    formatter = logging.Formatter(log_format)
-
-    # Create console handler
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
-
-    # Create file handler if log file specified
-    if log_file:
-        log_path = Path(log_file)
-        log_path.parent.mkdir(parents=True, exist_ok=True)
-        file_handler = logging.FileHandler(log_file)
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
-
-    return logger 
-
-def get_memory_usage():
-    """Get current memory usage in MB"""
-    process = psutil.Process(os.getpid())
-    return process.memory_info().rss / 1024 / 1024
-
-def load_config():
-    config_path = Path(__file__).parent / "config" / "config.yaml"
-    with open(config_path) as f:
-        return yaml.safe_load(f)
-
 def get_llm(config):
-    env_path = Path(os.path.expanduser(config['data']['paths']['env']))
-    load_dotenv(dotenv_path=env_path, override=True)
-    
     groq_key = os.getenv("GROQ_API_KEY")
     if not groq_key:
         raise ValueError("GROQ_API_KEY is not set.")
@@ -88,7 +37,7 @@ def get_token_counter() -> TokenCounter:
     )
     return lambda text: len(tokenizer.encode(text))
 
-def run_crew(config: dict, llm: ChatGroq, logger: logging.Logger) -> Dict[str, Any]:
+def run_crew(config: dict, llm: ChatGroq, logger: logging.Logger, memory_manager: MemoryManager) -> Dict[str, Any]:
     """Run a single crew iteration and return metrics"""
     # Create token counter
     token_counter = get_token_counter()
@@ -120,6 +69,7 @@ def run_crew(config: dict, llm: ChatGroq, logger: logging.Logger) -> Dict[str, A
         questions_task=questions_task,
         config=config,
         logger=logger,
+        memory_manager=memory_manager,
         input_tasks=[prep_task, questions_task]  # Add dependencies
     )
 
@@ -147,15 +97,19 @@ def run_benchmark(config: dict, llm: ChatGroq, logger: logging.Logger) -> Benchm
     benchmark = BenchmarkMetrics(config=config)
     iterations = config['benchmark']['iterations']
     
+    # Initialize memory tracking
+    memory_manager = MemoryManager()
+    memory_manager.start_tracking()
+
     for i in range(iterations):
         logger.info(f"\nStarting iteration {i+1}/{iterations}")
         
         # Capture metrics for this iteration
         start_time = time.time()
-        start_memory = get_memory_usage()
+        start_stats = memory_manager.get_memory_stats()
         
         # Run the crew and get predict_agent from results
-        results = run_crew(config, llm, logger)
+        results = run_crew(config, llm, logger, memory_manager)
         
         # Store dataset stats only on first iteration
         if i == 0:
@@ -163,13 +117,15 @@ def run_benchmark(config: dict, llm: ChatGroq, logger: logging.Logger) -> Benchm
         
         # Calculate iteration metrics
         end_time = time.time()
-        end_memory = get_memory_usage()
+        
+        # Get final memory stats
+        end_stats = memory_manager.get_memory_stats()
         
         iteration_metrics = IterationMetrics(
             iteration=i+1,
             runtime=end_time - start_time,
-            memory_delta=end_memory - start_memory,
-            peak_memory=get_memory_usage(),
+            memory_delta=end_stats['delta'],
+            peak_memory=end_stats['peak'],
             llm_calls=results['llm_calls'],
             avg_latency=results['api_latency'],
             total_prompt_tokens=results['total_prompt_tokens'],
@@ -191,6 +147,7 @@ def run_benchmark(config: dict, llm: ChatGroq, logger: logging.Logger) -> Benchm
 
 if __name__ == "__main__":
     config = load_config()
+    load_env_vars(config)
     llm = get_llm(config)
-    logger = setup_logging()
+    logger = setup_logging(framework_name="crewai")
     benchmark_results = run_benchmark(config, llm, logger)

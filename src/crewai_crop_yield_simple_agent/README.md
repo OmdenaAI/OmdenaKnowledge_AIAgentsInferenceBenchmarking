@@ -19,10 +19,25 @@ The system uses a modular architecture with two main components:
    - **Data Classes**
      - `CropDataset`: Encapsulates crop yield data and statistics
      - `CropPrediction`: Represents individual predictions
-     - `Metrics`: Various metric tracking classes (LLM, Prediction, Benchmark)
+     - `Metrics`: Various metric tracking classes
+       - `BenchmarkMetrics`: Overall benchmark performance tracking
+       - `IterationMetrics`: Per-iteration performance metrics
+       - `TaskMetricsConfig`: Configuration for task-specific metrics
+       - `AgentMetricsConfig`: Configuration for agent-specific metrics
    - **Utilities**
      - `TokenCounter`: Protocol for token counting implementation
-     - Other shared utilities for data processing and metrics tracking
+     - `MemoryManager`: Tracks memory usage and statistics
+     - `RateLimiter`: Controls API call frequency
+     - `load_env_vars`: Environment variable configuration
+     - `load_config`: YAML configuration file handling
+     - `setup_logging`: Standardized logging configuration
+
+The shared components provide:
+- Standardized data structures for metrics collection
+- Common utilities for resource management
+- Consistent configuration handling
+- Memory and performance monitoring
+- Rate limiting for API calls
 
 ## Dependencies
 

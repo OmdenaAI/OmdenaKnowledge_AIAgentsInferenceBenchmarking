@@ -4,10 +4,9 @@ from typing import Optional, List, Dict, Any, Annotated, Tuple
 from pydantic import Field, ConfigDict
 from .data_preparation_task import DataPreparationTask
 from .question_loading_task import QuestionLoadingTask
-from simple_agent_common.utils import RateLimiter
+from simple_agent_common.utils import RateLimiter, MemoryManager
 import logging
-import time
-import groq
+
 
 class PredictionTask(Task):
     model_config = ConfigDict(
@@ -25,13 +24,14 @@ class PredictionTask(Task):
     predictions: List[CropPrediction] = Field(default_factory=list)
     config: Optional[Dict[str, Any]] = Field(None, exclude=True)
     logger: Optional[logging.Logger] = Field(None, exclude=True)
+    memory_manager: Optional[MemoryManager] = Field(None, exclude=True)
     benchmark: Dict[str, Any] = Field(default_factory=dict)
     agent: Optional[Any] = Field(None, exclude=True)
     prep_task: Optional[DataPreparationTask] = Field(None)
     questions_task: Optional[QuestionLoadingTask] = Field(None)
 
     def __init__(self, agent: Any, prep_task: DataPreparationTask, questions_task: QuestionLoadingTask, 
-                 config: Dict[str, Any], logger: logging.Logger, **kwargs):
+                 config: Dict[str, Any], logger: logging.Logger, memory_manager: MemoryManager, **kwargs):
         super().__init__(
             description="Generate yield predictions using LLM",
             expected_output="Yield predictions with accuracy metrics",
@@ -44,11 +44,13 @@ class PredictionTask(Task):
             "agent": agent,
             "config": config,
             "logger": logger,
+            "memory_manager": memory_manager,
             "prep_task": prep_task,
             "questions_task": questions_task
         })
         
         self.logger = logger
+        self.memory_manager = memory_manager
         self.config = config
         self.agent = agent
         self.prep_task = prep_task
@@ -64,6 +66,10 @@ class PredictionTask(Task):
         rate_limiter = RateLimiter(max_calls=4, pause_time=20)
 
         for prompt, completion in self.questions_task.questions:
+            
+            # Track memory around prediction
+            memory_stats = self.memory_manager.get_memory_stats()
+
             with rate_limiter:
                 prediction = self.agent.predict_yield(
                     prompt=prompt,
@@ -71,10 +77,13 @@ class PredictionTask(Task):
                     dataset=self.prep_task.dataset
                 )
             self.predictions.append(prediction)
-            
+
             self.metrics.prediction_metrics.predictions.append(
                 (prediction.predicted_yield, prediction.actual_yield)
             )
+            
+            # Track memory around prediction
+            memory_stats = self.memory_manager.get_memory_stats()
             
         self.metrics.prediction_metrics.calculate_metrics()
         return f"Made {len(self.predictions)} yield predictions" 

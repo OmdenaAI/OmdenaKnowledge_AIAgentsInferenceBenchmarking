@@ -7,11 +7,11 @@
   "iterations": [
     {
       "iteration": 1,
-      "runtime": 49.51772403717041,
-      "memory_delta": 5.875,
-      "peak_memory": 272.296875,
+      "runtime": 20.107059955596924,
+      "memory_delta": 3.359375,
+      "peak_memory": 266.078125,
       "llm_calls": 10,
-      "avg_latency": 0.009874343872070312,
+      "avg_latency": 0.009366750717163086,
       "total_prompt_tokens": 5669,
       "tokens_per_call": 573.8,
       "mae": 1432.5,
@@ -20,11 +20,11 @@
     },
     {
       "iteration": 2,
-      "runtime": 40.05169200897217,
-      "memory_delta": 0.078125,
-      "peak_memory": 272.375,
+      "runtime": 40.037556171417236,
+      "memory_delta": 3.53125,
+      "peak_memory": 266.25,
       "llm_calls": 10,
-      "avg_latency": 0.010213255882263184,
+      "avg_latency": 0.010400986671447754,
       "total_prompt_tokens": 5669,
       "tokens_per_call": 573.8,
       "mae": 1432.5,
@@ -33,11 +33,11 @@
     },
     {
       "iteration": 3,
-      "runtime": 20.08548092842102,
-      "memory_delta": 0.0625,
-      "peak_memory": 272.4375,
+      "runtime": 40.03370499610901,
+      "memory_delta": 3.546875,
+      "peak_memory": 266.265625,
       "llm_calls": 10,
-      "avg_latency": 0.009172725677490234,
+      "avg_latency": 0.010369515419006348,
       "total_prompt_tokens": 5669,
       "tokens_per_call": 573.8,
       "mae": 1432.5,
@@ -46,5 +46,5 @@
     }
   ],
   "dataset_stats": {},
-  "timestamp": "2025-01-26 18:00:36.044115"
+  "timestamp": "2025-01-27 12:03:57.450501"
 }

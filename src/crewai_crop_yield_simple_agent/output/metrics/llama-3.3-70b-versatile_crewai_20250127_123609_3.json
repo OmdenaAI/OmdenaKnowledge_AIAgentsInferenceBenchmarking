@@ -7,42 +7,42 @@
   "iterations": [
     {
       "iteration": 1,
-      "runtime": 41.310805797576904,
-      "memory_delta": 93.96875,
-      "peak_memory": 463.96875,
-      "llm_calls": 10,
-      "avg_latency": 0.3204051971435547,
-      "total_prompt_tokens": 5659,
-      "tokens_per_call": 565.9,
-      "mae": 1445.1,
-      "mape": 6.537839290420042,
-      "rmse": 1729.0604095866634
+      "runtime": 144.8055558204651,
+      "memory_delta": 95.453125,
+      "peak_memory": 464.296875,
+      "llm_calls": 28,
+      "avg_latency": 3.0450198745727537,
+      "total_prompt_tokens": 15777,
+      "tokens_per_call": 563.4642857142857,
+      "mae": 1427.04,
+      "mape": 10.913682435079775,
+      "rmse": 1645.9541913431249
     },
     {
       "iteration": 2,
-      "runtime": 40.90456819534302,
-      "memory_delta": 31.828125,
-      "peak_memory": 495.796875,
-      "llm_calls": 10,
-      "avg_latency": 0.3264703989028931,
-      "total_prompt_tokens": 5659,
-      "tokens_per_call": 565.9,
-      "mae": 1445.5,
-      "mape": 6.539199140836495,
-      "rmse": 1729.6927761888815
+      "runtime": 109.35342788696289,
+      "memory_delta": 125.46875,
+      "peak_memory": 494.3125,
+      "llm_calls": 25,
+      "avg_latency": 1.4429222965240478,
+      "total_prompt_tokens": 14084,
+      "tokens_per_call": 563.36,
+      "mae": 1416.76,
+      "mape": 10.77645291323753,
+      "rmse": 1627.142956227264
     },
     {
       "iteration": 3,
-      "runtime": 41.1332790851593,
-      "memory_delta": 20.9375,
-      "peak_memory": 516.734375,
-      "llm_calls": 10,
-      "avg_latency": 0.30832102298736574,
-      "total_prompt_tokens": 5659,
-      "tokens_per_call": 565.9,
-      "mae": 1463.9,
-      "mape": 6.7566636066644055,
-      "rmse": 1732.7695461312794
+      "runtime": 109.70308113098145,
+      "memory_delta": 142.328125,
+      "peak_memory": 511.171875,
+      "llm_calls": 25,
+      "avg_latency": 1.2053448486328124,
+      "total_prompt_tokens": 14084,
+      "tokens_per_call": 563.36,
+      "mae": 1413.64,
+      "mape": 10.736072542092764,
+      "rmse": 1624.222878794656
     }
   ],
   "dataset_stats": {
@@ -83,5 +83,5 @@
       }
     }
   },
-  "timestamp": "2025-01-26 18:30:51.916356"
+  "timestamp": "2025-01-27 12:36:09.000677"
 }

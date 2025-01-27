@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from simple_agent_common.data_classes import CropDataset
 from .base_agent import BaseAgentConfig
-import random
 import logging
 import json
 from pathlib import Path

@@ -1,7 +1,7 @@
 data:
   paths:
     crop_data: "data/crop+yield+predictiondata_crop_yield.csv"
-    questions: "data/crop_yield_questions_10.jsonl"
+    questions: "data/crop_yield_questions_25.jsonl"
     env: "~/src/python/.env"
     metrics: "output/metrics"
 
