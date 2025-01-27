@@ -18,3 +18,5 @@ dependencies:
       - huggingface-hub==0.20.3
       - tokenizers==0.15.2
       - python-dotenv==1.0.0
+      - tenacity==8.5.0
+      - "-e ../simple_agent_common/."

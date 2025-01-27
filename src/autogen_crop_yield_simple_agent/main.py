@@ -1,10 +1,8 @@
 import autogen
 from agents import DataPreparationAgent, PredictionAgent
 from agents.token_counter import TokenCounter
-from utils.rate_limiter import RateLimiter
 from utils.logging import setup_logging
 from utils.config import load_config
-from utils.metrics import MetricsHandler
 from utils.env import load_env_vars
 import logging
 from typing import Dict, Any, List
@@ -13,7 +11,8 @@ import os
 import time
 import numpy as np
 import psutil
-
+from simple_agent_common.data_classes import BenchmarkMetrics, IterationMetrics, PredictionMetrics
+from simple_agent_common.utils import RateLimiter
 
 def setup_agents(config: Dict[str, Any], logger: logging.Logger, config_list: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Setup and configure all agents"""
@@ -62,7 +61,8 @@ def get_memory_usage():
 def run_benchmark(config: Dict[str, Any], logger: logging.Logger) -> List[Dict[str, Any]]:
     """Run the benchmark process with iterations"""
     logger.debug("Starting benchmark run...")
-    iteration_metrics = []
+
+    benchmark = BenchmarkMetrics(config=config)
     
     # Get number of iterations from config
     num_iterations = config['benchmark'].get('iterations', 3)
@@ -73,7 +73,6 @@ def run_benchmark(config: Dict[str, Any], logger: logging.Logger) -> List[Dict[s
     agents = setup_agents(config, logger, config_list)
     
     # Initialize handlers
-    metrics_handler = MetricsHandler(config)
     rate_limiter = RateLimiter(max_calls=5, pause_time=20)
     
     # Load and prepare data once
@@ -92,26 +91,15 @@ def run_benchmark(config: Dict[str, Any], logger: logging.Logger) -> List[Dict[s
         questions = agents['data_agent'].load_questions()
         logger.info(f"Loaded {len(questions)} questions via DataPreparationAgent")
         
-        # Track metrics for this iteration
-        iteration_result = {
-            'iteration': iteration + 1,
-            'runtime': 0.0,
-            'memory_delta': 0.0,
-            'peak_memory': 0.0,
-            'llm_calls': 0,
-            'avg_latency': 0.0,
-            'total_prompt_tokens': 0,
-            'tokens_per_call': 0,
-            'mae': 0.0,
-            'mape': 0.0,
-            'rmse': 0.0
-        }
-        
         # Lists to track predictions and metrics
-        predictions = []
-        actuals = []
         latencies = []
         
+        llm_calls = 0
+        total_prompt_tokens = 0
+        total_tokens = 0
+
+        prediction_metrics = PredictionMetrics()
+
         # Run predictions
         for question in questions:
             with rate_limiter:
@@ -132,12 +120,12 @@ def run_benchmark(config: Dict[str, Any], logger: logging.Logger) -> List[Dict[s
                     )
                     
                     # Update tracking
-                    iteration_result['llm_calls'] += 1
-                    iteration_result['total_prompt_tokens'] += prediction_result['prompt_tokens']
-                    iteration_result['total_response_tokens'] = iteration_result.get('total_response_tokens', 0) + prediction_result['response_tokens']
+                    llm_calls += (prediction_result['retry_count'] + 1)
+                    total_prompt_tokens += prediction_result['prompt_tokens']
+                    total_tokens += prediction_result['total_tokens']
                     
-                    predictions.append(prediction_result['predicted_yield'])
-                    actuals.append(question['actual_yield'])
+                    prediction_metrics.predictions.append((prediction_result['predicted_yield'], features['Yield']))
+
                     latencies.append(prediction_result['latency'])
                     
                     # Track memory after prediction
@@ -151,24 +139,30 @@ def run_benchmark(config: Dict[str, Any], logger: logging.Logger) -> List[Dict[s
         # Calculate final metrics
         end_memory = get_memory_usage()
         runtime = time.time() - start_time
+
+        prediction_metrics.calculate_metrics()
         
-        iteration_result.update({
-            'runtime': runtime,
-            'memory_delta': end_memory - start_memory,
-            'peak_memory': peak_memory,
-            'avg_latency': np.mean(latencies) if latencies else 0.0,
-            'tokens_per_call': iteration_result['total_prompt_tokens'] / iteration_result['llm_calls'] if iteration_result['llm_calls'] > 0 else 0.0,
-            'mae': np.mean(np.abs(np.array(predictions) - np.array(actuals))) if predictions else 0.0,
-            'mape': np.mean(np.abs((np.array(predictions) - np.array(actuals)) / np.array(actuals))) * 100 if predictions else 0.0,
-            'rmse': np.sqrt(np.mean((np.array(predictions) - np.array(actuals)) ** 2)) if predictions else 0.0
-        })
-        
-        iteration_metrics.append(iteration_result)
+        iteration_result = IterationMetrics(
+            iteration=iteration+1,
+            runtime=runtime,
+            memory_delta=end_memory - start_memory,
+            peak_memory=peak_memory,
+            llm_calls=llm_calls,
+            avg_latency=np.mean(latencies) if latencies else 0.0,
+            total_prompt_tokens=total_prompt_tokens,
+            tokens_per_call=total_tokens / llm_calls if llm_calls > 0 else 0.0,
+            mae=prediction_metrics.mae,
+            mape=prediction_metrics.mape,
+            rmse=prediction_metrics.rmse
+        )        
+        benchmark.iterations.append(iteration_result)
         logger.info(f"Completed iteration {iteration + 1}")
     
     # Save metrics for all iterations
-    metrics_handler.save_metrics(iteration_metrics, framework="autogen")
-    return iteration_metrics
+    metrics_dir = Path(config['data']['paths']['metrics'])
+    benchmark.save_metrics(metrics_dir, 'autogen')
+    
+    return benchmark
 
 if __name__ == "__main__":
     config = load_config()

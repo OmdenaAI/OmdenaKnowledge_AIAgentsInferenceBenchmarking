@@ -1,0 +1,87 @@
+{
+  "model_name": "llama-3.3-70b-versatile",
+  "model_temperature": 0.01,
+  "model_max_tokens": 1000,
+  "random_few_shot": false,
+  "num_few_shot": 5,
+  "iterations": [
+    {
+      "iteration": 1,
+      "runtime": 41.310805797576904,
+      "memory_delta": 93.96875,
+      "peak_memory": 463.96875,
+      "llm_calls": 10,
+      "avg_latency": 0.3204051971435547,
+      "total_prompt_tokens": 5659,
+      "tokens_per_call": 565.9,
+      "mae": 1445.1,
+      "mape": 6.537839290420042,
+      "rmse": 1729.0604095866634
+    },
+    {
+      "iteration": 2,
+      "runtime": 40.90456819534302,
+      "memory_delta": 31.828125,
+      "peak_memory": 495.796875,
+      "llm_calls": 10,
+      "avg_latency": 0.3264703989028931,
+      "total_prompt_tokens": 5659,
+      "tokens_per_call": 565.9,
+      "mae": 1445.5,
+      "mape": 6.539199140836495,
+      "rmse": 1729.6927761888815
+    },
+    {
+      "iteration": 3,
+      "runtime": 41.1332790851593,
+      "memory_delta": 20.9375,
+      "peak_memory": 516.734375,
+      "llm_calls": 10,
+      "avg_latency": 0.30832102298736574,
+      "total_prompt_tokens": 5659,
+      "tokens_per_call": 565.9,
+      "mae": 1463.9,
+      "mape": 6.7566636066644055,
+      "rmse": 1732.7695461312794
+    }
+  ],
+  "dataset_stats": {
+    "Cocoa, beans": {
+      "count": 39,
+      "yield_stats": {
+        "min": 5765.0,
+        "max": 13056.0,
+        "mean": 8883.128205128205,
+        "std": 1745.0305860611152
+      }
+    },
+    "Oil palm fruit": {
+      "count": 39,
+      "yield_stats": {
+        "min": 142425.0,
+        "max": 203399.0,
+        "mean": 175804.6923076923,
+        "std": 14919.86975241908
+      }
+    },
+    "Rice, paddy": {
+      "count": 39,
+      "yield_stats": {
+        "min": 24686.0,
+        "max": 42550.0,
+        "mean": 32099.666666666668,
+        "std": 4789.948435791753
+      }
+    },
+    "Rubber, natural": {
+      "count": 39,
+      "yield_stats": {
+        "min": 5249.0,
+        "max": 10285.0,
+        "mean": 7824.897435897436,
+        "std": 1600.2550420886337
+      }
+    }
+  },
+  "timestamp": "2025-01-26 18:30:51.916356"
+}

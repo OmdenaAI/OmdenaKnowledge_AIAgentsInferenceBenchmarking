@@ -67,7 +67,7 @@ class DataPreparationAgent(Agent):
             'crop_distribution': {
                 crop: {
                     'count': int(count),
-                    'yield_stats': df[df['Crop'] == crop]['Yield'].agg(['min', 'max', 'mean']).to_dict()
+                    'yield_stats': df[df['Crop'] == crop]['Yield'].agg(['min', 'max', 'mean', 'std']).to_dict()
                 } for crop, count in crop_counts.items()
             }
         }

@@ -5,9 +5,9 @@ from agents.token_counter import TokenCounter
 import time
 import re
 import logging
-from utils.retry import retry_with_exponential_backoff
 import random
 import pandas as pd
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 class PredictionAgent:
     def __init__(self, config: Dict[str, Any], logger: logging.Logger, 
@@ -40,7 +40,11 @@ class PredictionAgent:
         self.max_retries = 3
         self.retry_count = 0
 
-    @retry_with_exponential_backoff(max_retries=5, base_delay=4, max_delay=10)
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=4, max=10),
+        reraise=True
+    )
     def predict_yield(self, features: Dict[str, Any], context: str) -> Dict[str, Any]:
         """Make a yield prediction using AutoGen agents with group chat"""
         self.logger.debug("predict_yield called with features: %s", features)
@@ -112,7 +116,7 @@ class PredictionAgent:
     def _build_prediction_context(self, features: Dict[str, Any], dataset: Dict[str, Any]) -> str:
         """Build prediction context from historical data"""
         try:
-            df = dataset['df']
+            df = dataset.df
             # Get num_few_shot from config
             num_few_shot = self.base_config.config['benchmark'].get('num_few_shot', 5)
             random_few_shot = self.base_config.config['benchmark'].get('random_few_shot', False)
@@ -155,7 +159,7 @@ class PredictionAgent:
                 historical_phrase = f"Random historical records for {features['crop']}:\n"
             
             # Get the summary yield stats for the featured crop
-            yield_stats = dataset["summary"]["crop_distribution"][features["crop"]]["yield_stats"]
+            yield_stats = dataset.summary["crop_distribution"][features["crop"]]["yield_stats"]
 
                 # Format few-shot examples
             few_shot_examples = [

@@ -127,6 +127,10 @@ class BenchmarkMetrics(BaseModel):
         self.dataset_stats = dataset.summary['crop_distribution']
 
     def save_metrics(self, metrics_dir: Path, framework: str) -> None:
+
+        # Print a summary of the metrics
+        self._print_benchmark_summary()
+
         """Save metrics and create visualizations"""
         metrics_dir.mkdir(exist_ok=True)
         

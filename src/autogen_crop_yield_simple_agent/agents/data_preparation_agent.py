@@ -1,7 +1,7 @@
 from typing import Dict, Any, List, Optional
 import pandas as pd
 import numpy as np
-import autogen
+from simple_agent_common.data_classes import CropDataset
 from .base_agent import BaseAgentConfig
 import random
 import logging
@@ -64,19 +64,41 @@ class DataPreparationAgent:
             # Basic cleaning
             df = self._clean_data(df)
             
-            # Calculate summary statistics
+            # Add detailed crop distribution analysis
+            crop_counts = df['Crop'].value_counts()
+            self.logger.info("\n🌾 Crop Distribution:")
+            self.logger.info("=" * 50)
+            for crop, count in crop_counts.items():
+                yield_stats = df[df['Crop'] == crop]['Yield'].agg(['min', 'max', 'mean'])
+                self.logger.info(f"- {crop}:")
+                self.logger.info(f"  Records: {count}")
+                self.logger.info(f"  Yield Range: {yield_stats['min']:.0f} - {yield_stats['max']:.0f}")
+                self.logger.info(f"  Average Yield: {yield_stats['mean']:.0f}")
+                self.logger.info("-" * 30)
+            
             summary = {
-                'crop_distribution': self._get_crop_stats(df),
-                'feature_stats': self._get_feature_stats(df)
+                'total_records': len(df),
+                'crops': df['Crop'].unique().tolist(),
+                'yield_range': f"{df['Yield'].min():.2f}-{df['Yield'].max():.2f}",
+                'crop_distribution': {
+                    crop: {
+                        'count': int(count),
+                        'yield_stats': df[df['Crop'] == crop]['Yield'].agg(['min', 'max', 'mean', 'std']).to_dict()
+                    } for crop, count in crop_counts.items()
+                }
             }
+            self.logger.info(f"\n📈 Dataset Summary:")
+            self.logger.info(f"Total Records: {summary['total_records']}")
+            self.logger.info(f"Number of Crops: {len(summary['crops'])}")
+            self.logger.info(f"Overall Yield Range: {summary['yield_range']}")
             
-            self.dataset = {
-                'df': df,
-                'summary': summary,
-                'crops': df['Crop'].unique().tolist()
-            }
-            
-            self.logger.info(f"Prepared dataset with {len(df)} records across {len(self.dataset['crops'])} crops")
+            self.dataset =  CropDataset(
+                df=df,
+                summary=summary,
+                crops=df['Crop'].unique().tolist(),
+                data_path=str(data_path)
+            )
+
             return self.dataset
             
         except Exception as e:
@@ -112,41 +134,6 @@ class DataPreparationAgent:
         
         return df
 
-    def _get_crop_stats(self, df: pd.DataFrame) -> Dict[str, Dict]:
-        """Calculate crop-specific statistics"""
-        stats = {}
-        for crop in df['Crop'].unique():
-            crop_data = df[df['Crop'] == crop]
-            stats[crop] = {
-                'count': len(crop_data),
-                'yield_stats': {
-                    'min': float(crop_data['Yield'].min()),
-                    'max': float(crop_data['Yield'].max()),
-                    'mean': float(crop_data['Yield'].mean()),
-                    'std': float(crop_data['Yield'].std())
-                }
-            }
-
-        return stats
-
-    def _get_feature_stats(self, df: pd.DataFrame) -> Dict[str, Dict]:
-        """Calculate feature statistics"""
-        feature_cols = [
-            'Precipitation (mm day-1)',
-            'Specific Humidity at 2 Meters (g/kg)',
-            'Relative Humidity at 2 Meters (%)',
-            'Temperature at 2 Meters (C)'
-        ]
-        
-        stats = {}
-        for col in feature_cols:
-            stats[col] = {
-                'min': float(df[col].min()),
-                'max': float(df[col].max()),
-                'mean': float(df[col].mean()),
-                'std': float(df[col].std())
-            }
-        return stats
 
     def load_questions(self) -> List[Dict[str, Any]]:
         """Load and validate test questions"""

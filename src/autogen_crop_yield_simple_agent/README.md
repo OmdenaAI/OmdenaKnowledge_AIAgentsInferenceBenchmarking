@@ -17,23 +17,35 @@ The system uses a modular architecture with several key components:
      - Validates and cleans input data
      - Extracts features from questions
      - Manages data statistics and summaries
-   - `TokenCounter`: Tracks token usage
-     - Uses LLaMA tokenizer for accurate counting
-     - Monitors prompt and completion tokens
 
-2. **Utilities**
-   - `RateLimiter`: Controls API call frequency
-   - `MetricsHandler`: Manages performance tracking
-   - `ConfigLoader`: Handles configuration validation
-   - `RetryDecorator`: Implements exponential backoff
-   - `LoggingSetup`: Configures application logging
+2. **Local Utilities**
+   - `MetricsHandler`: Performance tracking and visualization
+     - Tracks prediction accuracy (MAE, MAPE, RMSE)
+     - Monitors system metrics (memory, runtime, API calls)
+     - Generates performance visualizations
+   - `ConfigLoader`: Configuration management
+     - YAML configuration validation
+     - Environment setup
+   - `MemoryTracker`: Resource monitoring
+     - Process memory tracking
+     - Memory delta calculations
+
+3. **Shared Components** (simple_agent_common)
+   - Data Classes
+     - `BenchmarkMetrics`: Overall benchmark statistics
+     - `IterationMetrics`: Per-iteration measurements
+     - `PredictionMetrics`: Prediction accuracy metrics
+   - Common utilities
+     - `RateLimiter`: Controls API call frequency
+     - Retry logic with exponential backoff (via tenacity)
+     - Path management
 
 ### Data Flow
 
 1. **Initialization**
-   - Load configuration from YAML
+   - Load and validate configuration via simple_agent_common
    - Setup logging and environment
-   - Initialize agents and utilities
+   - Initialize agents and shared utilities
 
 2. **Benchmark Process**
    - Data preparation phase
@@ -42,26 +54,27 @@ The system uses a modular architecture with several key components:
    - Iteration phase
      - Select few-shot examples (similarity/random)
      - Make predictions via AutoGen
-     - Track performance metrics
+     - Track performance using shared MetricsHandler
    - Metrics collection
-     - Calculate error metrics (MAE, MAPE, RMSE)
-     - Monitor resource usage
-     - Generate visualizations
+     - Calculate error metrics using shared utilities
+     - Monitor resource usage via MemoryTracker
+     - Generate visualizations through MetricsHandler
 
 ### Performance Monitoring
 
-1. **Prediction Metrics**
+1. **Prediction Metrics** (via simple_agent_common)
    - Error calculations per iteration
    - Aggregate statistics across runs
+   - Standardized metrics collection
 
-2. **System Metrics**
+2. **System Metrics** (via simple_agent_common)
    - Memory usage tracking
    - API latency monitoring
    - Token consumption analysis
 
 ### Output Generation
 
-1. **Metrics Output**
+1. **Metrics Output** (via simple_agent_common)
    - Detailed JSON reports
    - Performance visualizations
    - Runtime analysis graphs
@@ -72,21 +85,22 @@ The system uses a modular architecture with several key components:
    - Error tracking
 
 ## Configuration (config.yaml)
-yaml
+```yaml
 data:
-paths:
-crop_data: "data/crop+yield+predictiondata_crop_yield.csv" # Source dataset
-questions: "data/crop_yield_questions_10.jsonl" # Test questions
-env: "~/src/python/.env" # Environment variables
-metrics: "output/metrics" # Output directory
+  paths:
+    crop_data: "data/crop+yield+predictiondata_crop_yield.csv"
+    questions: "data/crop_yield_questions_10.jsonl"
+    env: "~/src/python/.env"
+    metrics: "output/metrics"
 model:
-name: "llama-3.1-70b-versatile" # LLM model identifier
-temperature: 0.01 # Randomness control (lower = more deterministic)
-max_tokens: 1000 # Maximum response length
+  name: "llama-3.1-70b-versatile"
+  temperature: 0.01
+  max_tokens: 1000
 benchmark:
-iterations: 3 # Number of test iterations
-random_few_shot: false # Use random vs similarity-based examples
-num_few_shot: 5 # Number of examples per prediction
+  iterations: 3
+  random_few_shot: false
+  num_few_shot: 5
+```
 
 ## Performance Metrics
 
