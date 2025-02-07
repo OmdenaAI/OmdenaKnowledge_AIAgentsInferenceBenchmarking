@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Tuple, Dict, TYPE_CHECKING, Any
+from typing import List, Tuple, Dict, TYPE_CHECKING, Any, Optional
 import numpy as np
 from datetime import datetime
 import json
@@ -44,24 +44,48 @@ class LLMMetrics(BaseMetrics):
 
 class PredictionMetrics(BaseMetrics):
     """Track prediction accuracy"""
-    predictions: List[Tuple[float, float]] = Field(default_factory=list, description="Predicted vs actual values")
+    predictions: List[Tuple[float, float, str]] = Field(default_factory=list, description="Predicted vs actual values with group label")
     mae: float = Field(default=0.0, description="Mean Absolute Error")
     mape: float = Field(default=0.0, description="Mean Absolute Percentage Error")
     rmse: float = Field(default=0.0, description="Root Mean Square Error")
+    group_metrics: Dict[str, Dict[str, float]] = Field(default_factory=dict, description="Metrics grouped by group label")
+
+    def _calculate_metric_set(self, predicted: np.ndarray, actual: np.ndarray) -> Dict[str, float]:
+        """Calculate a set of metrics for the given predictions and actual values"""
+        return {
+            'mae': np.mean(np.abs(predicted - actual)),
+            'mape': np.mean(np.abs((predicted - actual) / actual)) * 100,
+            'rmse': np.sqrt(np.mean((predicted - actual) ** 2))
+        }
 
     def calculate_metrics(self) -> None:
-        """Calculate all prediction metrics"""
+        """Calculate all prediction metrics, both overall and grouped by the third parameter if present"""
         if not self.predictions:
             return
 
+        # Calculate overall metrics
         predicted = np.array([p[0] for p in self.predictions])
         actual = np.array([p[1] for p in self.predictions])
         
-        # Calculate metrics
-        self.mae = np.mean(np.abs(predicted - actual))
-        self.mape = np.mean(np.abs((predicted - actual) / actual)) * 100
-        self.rmse = np.sqrt(np.mean((predicted - actual) ** 2))
+        # Calculate overall metrics
+        metrics = self._calculate_metric_set(predicted, actual)
+        self.mae = metrics['mae']
+        self.mape = metrics['mape']
+        self.rmse = metrics['rmse']
 
+        # Group predictions
+        groups: Dict[str, List[Tuple[float, float]]] = {}
+        for pred, act, group in self.predictions:
+            if group not in groups:
+                groups[group] = []
+            groups[group].append((pred, act))
+
+        # Calculate metrics for each group
+        self.group_metrics = {}
+        for group, group_predictions in groups.items():
+            group_predicted = np.array([p[0] for p in group_predictions])
+            group_actual = np.array([p[1] for p in group_predictions])
+            self.group_metrics[group] = self._calculate_metric_set(group_predicted, group_actual)
 
 class IterationMetrics(BaseModel):
     """Metrics for a single iteration"""
@@ -76,6 +100,10 @@ class IterationMetrics(BaseModel):
     mae: float = Field(..., description="Mean Absolute Error")
     mape: float = Field(..., description="Mean Absolute Percentage Error")
     rmse: float = Field(..., description="Root Mean Square Error")
+    group_metrics: Dict[str, Dict[str, float]] = Field(
+        default_factory=dict,
+        description="Optional group-wise metrics. Only populated when predictions contain group labels. Format: {'group_name': {'mae': float, 'mape': float, 'rmse': float}}"
+    )
 
 class BenchmarkMetrics(BaseModel):
     """Track benchmark metrics across iterations"""
@@ -93,8 +121,8 @@ class BenchmarkMetrics(BaseModel):
             model_name=config['model']['name'],
             model_temperature=config['model']['temperature'],
             model_max_tokens=config['model']['max_tokens'],
-            random_few_shot=config['benchmark']['random_few_shot'],
-            num_few_shot=config['benchmark']['num_few_shot'],
+            random_few_shot=config.get('benchmark', {}).get('random_few_shot', False),
+            num_few_shot=config.get('benchmark', {}).get('num_few_shot', 0),
             iterations=[],
             dataset_stats={},
             timestamp=datetime.now()
@@ -118,9 +146,9 @@ class BenchmarkMetrics(BaseModel):
         print(f"- Average API Latency: {self.avg_latency:.2f} seconds")
         print(f"- Average Tokens/Call: {self.avg_token_count:.1f}")
         print(f"- Total Tokens: {self.total_token_count}")
-        print(f"- Average MAE: {self.avg_mae:.2f}")
-        print(f"- Average MAPE: {self.avg_mape:.2f}%")
-        print(f"- Average RMSE: {self.avg_rmse:.2f}") 
+        print(f"- Average MAE: {self.avg_mae:.2e}")
+        print(f"- Average MAPE: {self.avg_mape:.2e}%")
+        print(f"- Average RMSE: {self.avg_rmse:.2e}")
 
     def set_dataset_stats(self, dataset: 'CropDataset') -> None:
         """Store dataset statistics"""
@@ -142,6 +170,7 @@ class BenchmarkMetrics(BaseModel):
         # Create and save performance plots
         self.plot_performance(metrics_dir, framework)
         self.plot_runtime_metrics(metrics_dir, framework)
+        self.plot_agent_performance(metrics_dir, framework)
 
     def plot_performance(self, metrics_dir: Path, framework: str) -> None:
         """Create performance visualization"""
@@ -150,7 +179,7 @@ class BenchmarkMetrics(BaseModel):
         
         # Create figure with subplots
         fig = plt.figure(figsize=(15, 10))
-        fig.suptitle(f'{framework} Crop Yield Performance', fontsize=16, y=0.95)
+        fig.suptitle(f'{framework} Inference Performance', fontsize=16, y=1.02)
         
         # Create iteration range starting at 0
         iterations = range(0, len(self.iterations))  # Start at 0
@@ -282,4 +311,85 @@ class BenchmarkMetrics(BaseModel):
 
     @property
     def avg_rmse(self) -> float:
-        return np.mean([m.rmse for m in self.iterations]) if self.iterations else 0.0 
+        return np.mean([m.rmse for m in self.iterations]) if self.iterations else 0.0
+
+    def plot_agent_performance(self, metrics_dir: Path, framework: str) -> None:
+        """Create group-wise performance visualization across iterations."""
+        if not any(iteration.group_metrics for iteration in self.iterations):
+            return
+            
+        # Get all unique groups across iterations
+        all_groups = set()
+        for iteration in self.iterations:
+            all_groups.update(iteration.group_metrics.keys())
+            
+        # Setup the plot style
+        sns.set_theme(style="whitegrid")
+        sns.set_palette("husl")
+        
+        # Create figure with subplots
+        fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(15, 15))
+        fig.suptitle(f'{framework} Agent-wise Performance', fontsize=16, y=1.02)
+        
+        def plot_metric_values(ax, metric_name, title):
+            """Helper to plot metric values with opacity for overlapping lines"""
+            # Collect all values for each group
+            group_values = {}
+            for group in sorted(all_groups):
+                values = [
+                    iteration.group_metrics.get(group, {}).get(metric_name, None) 
+                    for iteration in self.iterations
+                ]
+                valid_points = [(i, v) for i, v in enumerate(values) if v is not None]
+                if valid_points:
+                    group_values[group] = valid_points
+
+            # Find overlapping value sequences
+            value_sequences = {}
+            for group, points in group_values.items():
+                value_seq = tuple(v for _, v in points)
+                if value_seq in value_sequences:
+                    value_sequences[value_seq].append(group)
+                else:
+                    value_sequences[value_seq] = [group]
+
+            # Plot with appropriate opacity and labels
+            for value_seq, groups in value_sequences.items():
+                points = group_values[groups[0]]  # Use first group's points (they're the same)
+                x_vals, y_vals = zip(*points)
+                
+                # Use more opacity if values overlap
+                alpha = 0.3 if len(groups) > 1 else 1.0
+                
+                if len(groups) > 1:
+                    # For overlapping groups, create a single line with all groups in label
+                    label = f"{', '.join(groups)} ({len(groups)} agents)"
+                    ax.plot(x_vals, y_vals, marker='o', alpha=alpha, label=label)
+                else:
+                    # For single group, just plot normally
+                    ax.plot(x_vals, y_vals, marker='o', alpha=alpha, label=groups[0])
+
+            ax.set_xlabel('Iteration')
+            ax.set_ylabel(title)
+            ax.legend(title='Agents', bbox_to_anchor=(1.05, 1), loc='upper left')
+            ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
+
+        # Plot each metric
+        plot_metric_values(ax1, 'mae', 'Mean Absolute Error')
+        plot_metric_values(ax2, 'mape', 'MAPE (%)')
+        plot_metric_values(ax3, 'rmse', 'RMSE')
+        
+        # Add model info
+        plt.figtext(0.02, 0.02, 
+                   f'Model: {self.model_name}\n'
+                   f'Temperature: {self.model_temperature}\n'
+                   f'Few-Shot Examples: {self.num_few_shot}', 
+                   fontsize=8, ha='left')
+        
+        # Adjust layout to prevent overlap
+        plt.tight_layout()
+        
+        # Save the plot
+        plot_filename = f"{self.model_name}_{framework}_{self.timestamp.strftime('%Y%m%d_%H%M%S')}_{len(self.iterations)}_agent_performance.png"
+        plt.savefig(metrics_dir / plot_filename, dpi=300, bbox_inches='tight')
+        plt.close() 

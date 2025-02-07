@@ -1,7 +1,7 @@
 from typing import Dict, Any, List, Optional
 import autogen
 from .base_agent import BaseAgentConfig
-from agents.token_counter import TokenCounter
+from simple_agent_common.utils import TokenCounter
 import time
 import re
 import logging

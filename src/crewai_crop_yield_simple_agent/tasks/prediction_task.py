@@ -79,7 +79,7 @@ class PredictionTask(Task):
             self.predictions.append(prediction)
 
             self.metrics.prediction_metrics.predictions.append(
-                (prediction.predicted_yield, prediction.actual_yield)
+                (prediction.predicted_yield, prediction.actual_yield, None)
             )
             
             # Track memory around prediction

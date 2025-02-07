@@ -1,5 +1,4 @@
 from agents import DataPreparationAgent, PredictionAgent
-from agents.token_counter import TokenCounter
 import logging
 from typing import Dict, Any, List
 from pathlib import Path
@@ -7,7 +6,7 @@ import os
 import time
 import numpy as np
 from simple_agent_common.data_classes import BenchmarkMetrics, IterationMetrics, PredictionMetrics
-from simple_agent_common.utils import RateLimiter, MemoryManager, load_env_vars, load_config, setup_logging
+from simple_agent_common.utils import RateLimiter, MemoryManager, load_env_vars, load_config, setup_logging, TokenCounter
 
 def setup_agents(config: Dict[str, Any], logger: logging.Logger, config_list: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Setup and configure all agents"""
@@ -118,7 +117,7 @@ def run_benchmark(config: Dict[str, Any], logger: logging.Logger) -> List[Dict[s
                     total_prompt_tokens += prediction_result['prompt_tokens']
                     total_tokens += prediction_result['total_tokens']
                     
-                    prediction_metrics.predictions.append((prediction_result['predicted_yield'], features['Yield']))
+                    prediction_metrics.predictions.append((prediction_result['predicted_yield'], features['Yield'], None))
 
                     latencies.append(prediction_result['latency'])
                     

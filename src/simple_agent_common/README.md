@@ -50,6 +50,7 @@ dependencies:
 - `logging.py`: Structured logging setup and configuration
 - `memory.py`: Track and manage memory usage
 - `rate_limitier.py`: Control API request rates
+- `token_counter.py`: Count tokens for text using tiktoken encoders
 
 ## Usage
 
@@ -65,7 +66,8 @@ from simple_agent_common.utils import (
     setup_logging,
     track_memory,
     rate_limit,
-    load_env
+    load_env_vars,
+    TokenCounter
 )
 ```
 

@@ -12,7 +12,8 @@ pyproject.toml
 ./utils/env.py
 ./utils/logging.py
 ./utils/memory.py
-./utils/rate_limitier.py
+./utils/rate_limiter.py
+./utils/token_counter.py
 data_classes/__init__.py
 data_classes/configs.py
 data_classes/crop_dataset.py
@@ -28,4 +29,5 @@ utils/config.py
 utils/env.py
 utils/logging.py
 utils/memory.py
-utils/rate_limitier.py
+utils/rate_limiter.py
+utils/token_counter.py

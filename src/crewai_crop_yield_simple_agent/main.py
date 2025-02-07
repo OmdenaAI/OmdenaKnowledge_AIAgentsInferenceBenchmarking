@@ -12,9 +12,9 @@ from agents import PredictionAgent, DataPreparationAgent
 from tasks import PredictionTask, DataPreparationTask, QuestionLoadingTask
 from simple_agent_common.data_classes import BenchmarkMetrics, IterationMetrics
 from simple_agent_common.utils import MemoryManager, load_env_vars, load_config, setup_logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Callable
 from transformers import AutoTokenizer
-from agents.token_counter import TokenCounter
+from simple_agent_common.utils.token_counter import TokenCounter
 
 def get_llm(config):
     groq_key = os.getenv("GROQ_API_KEY")
@@ -29,13 +29,10 @@ def get_llm(config):
         max_retries=2
     )
 
-def get_token_counter() -> TokenCounter:
+def get_token_counter() -> Callable[[str], int]:
     """Create a token counter for the model"""
-    tokenizer = AutoTokenizer.from_pretrained(
-        "NousResearch/Llama-2-7b-hf",  # Open source version of Llama-2 tokenizer
-        use_fast=True
-    )
-    return lambda text: len(tokenizer.encode(text))
+    counter = TokenCounter()
+    return counter.count_tokens
 
 def run_crew(config: dict, llm: ChatGroq, logger: logging.Logger, memory_manager: MemoryManager) -> Dict[str, Any]:
     """Run a single crew iteration and return metrics"""

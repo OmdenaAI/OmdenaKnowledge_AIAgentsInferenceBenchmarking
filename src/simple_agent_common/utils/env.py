@@ -16,7 +16,7 @@ def load_env_vars(config: Dict[str, Any]) -> None:
     # Print the first few characters of the API key for verification
     groq_key = os.getenv("GROQ_API_KEY")
     if groq_key:
-        print(f"GROQ API Key loaded (first 4 chars): {groq_key[:4]}...")
+        print(f"GROQ API Key loaded...")
     
     # Validate required environment variables
     required_vars = ['GROQ_API_KEY']

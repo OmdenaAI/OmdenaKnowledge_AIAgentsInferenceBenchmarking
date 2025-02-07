@@ -1,8 +1,9 @@
-from .rate_limitier import RateLimiter
+from .rate_limiter import RateLimiter
 from .config import load_config, validate_config
 from .env import load_env_vars
 from .memory import MemoryManager
 from .logging import setup_logging
+from .token_counter import TokenCounter
 
 __all__ = [
     'RateLimiter',
@@ -10,5 +11,6 @@ __all__ = [
     'validate_config',
     'load_env_vars',
     'MemoryManager',
-    'setup_logging'
+    'setup_logging',
+    'TokenCounter'
 ] 

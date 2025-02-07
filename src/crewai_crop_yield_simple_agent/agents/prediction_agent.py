@@ -8,7 +8,7 @@ import logging
 import time
 import random
 from tenacity import retry, stop_after_attempt, wait_exponential
-from .token_counter import TokenCounter
+from simple_agent_common.utils.token_counter import TokenCounter
 
 class PredictionAgent(Agent):
     model_config = ConfigDict(
@@ -30,7 +30,9 @@ class PredictionAgent(Agent):
     benchmark: Dict[str, Any] = Field(default_factory=dict)
     random_few_shot: bool = Field(default=False)
     num_few_shot: int = Field(default=5)
-    token_counter: Any = Field(None, exclude=True)
+    token_counter: Optional[Callable[[str], int]] = None
+    retry_count: int = Field(default=0)
+    max_retries: int = Field(default=3)
 
     def __init__(self, 
                  llm: Any, 
@@ -55,11 +57,15 @@ class PredictionAgent(Agent):
             "config": config,
             "random_few_shot": bool(config['benchmark'].get('random_few_shot', False)),
             "num_few_shot": int(config['benchmark'].get('num_few_shot', 5)),
-            "token_counter": token_counter
+            "token_counter": token_counter,
+            "retry_count": 0,
+            "max_retries": 3
         })
         self.logger = logger
         self.config = config
         self.token_counter = token_counter
+        self.retry_count = 0 
+        self.max_retries = 3
 
     def track_tokens(self, prompt_text: str) -> int:           
         prompt_tokens = self.token_counter(prompt_text)
