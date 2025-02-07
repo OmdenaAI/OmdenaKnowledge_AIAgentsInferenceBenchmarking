@@ -1,0 +1,15 @@
+data:
+  paths:
+    input_dir: "data"
+    env: "~/src/python/.env"
+    metrics: "output/metrics"
+  
+
+benchmark:
+  iterations: 3  # Number of times to run the complete test
+  total_questions: 20
+
+model:
+    name: "llama-3.3-70b-versatile"
+    temperature: 0.01
+    max_tokens: 1000
