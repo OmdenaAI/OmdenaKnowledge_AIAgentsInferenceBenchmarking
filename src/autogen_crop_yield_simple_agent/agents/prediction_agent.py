@@ -7,12 +7,14 @@ import re
 import logging
 import random
 import pandas as pd
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+import groq
 
 class PredictionAgent:
     def __init__(self, config: Dict[str, Any], logger: logging.Logger, 
                  token_counter: TokenCounter, llm_config: Dict[str, Any]):
         self.base_config = BaseAgentConfig(config, logger)
+        self.config = config
         
         # Create AutoGen agent with proper Groq configuration
         self.assistant = autogen.AssistantAgent(
@@ -40,12 +42,19 @@ class PredictionAgent:
         self.max_retries = 3
         self.retry_count = 0
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=4, max=10),
-        reraise=True
-    )
-    def predict_yield(self, features: Dict[str, Any], context: str) -> Dict[str, Any]:
+    def _get_retry_decorator(self):
+        """Create retry decorator with config values"""
+        return retry(
+            stop=stop_after_attempt(self.config['model']['stop_after_attempt']),
+            wait=wait_exponential(
+                multiplier=self.config['model']['wait_multiplier'],
+                min=self.config['model']['wait_min'],
+                max=self.config['model']['wait_max']
+            ),
+            retry=retry_if_exception_type(groq.RateLimitError)
+        )
+    
+    def _predict_yield(self, features: Dict[str, Any], context: str) -> Dict[str, Any]:
         """Make a yield prediction using AutoGen agents with group chat"""
         self.logger.debug("predict_yield called with features: %s", features)
         try:
@@ -96,13 +105,20 @@ class PredictionAgent:
                 'total_tokens': total_tokens,
                 'retry_count': self.retry_count
             }
-            
+        except groq.RateLimitError as e:  # Use full path
+            self.logger.info(f"Groq rate limit hit: {str(e)}")
+            raise
         except Exception as e:
             self.logger.error(f"Prediction failed: {str(e)}")
             if self.retry_count >= self.max_retries:
                 self.logger.error("Max retries reached")
             raise
  
+    def predict_yield(self, features: Dict[str, Any], context: str) -> Dict[str, Any]:
+        """Execute with retry decorator applied"""
+        predict_yield_with_retry = self._get_retry_decorator()(self._predict_yield)
+        return predict_yield_with_retry(features, context)
+    
     def _extract_predicated_yield(self, response: str) -> float:
         result = -1
         """Extract numerical prediction from response"""

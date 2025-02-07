@@ -7,8 +7,10 @@ import re
 import logging
 import time
 import random
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 from simple_agent_common.utils.token_counter import TokenCounter
+from simple_agent_common.utils.rate_limiter import RateLimitError
+import groq  # Import the module
 
 class PredictionAgent(Agent):
     model_config = ConfigDict(
@@ -72,12 +74,19 @@ class PredictionAgent(Agent):
         self.metrics.llm_metrics.prompt_tokens.append(prompt_tokens)
         return prompt_tokens
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=4, max=10),
-        reraise=True
-    )
-    def predict_yield(self, prompt: str, completion: str, dataset: CropDataset) -> CropPrediction:
+    def _get_retry_decorator(self):
+        """Create retry decorator with config values"""
+        return retry(
+            stop=stop_after_attempt(self.config['model']['stop_after_attempt']),
+            wait=wait_exponential(
+                multiplier=self.config['model']['wait_multiplier'],
+                min=self.config['model']['wait_min'],
+                max=self.config['model']['wait_max']
+            ),
+            retry=retry_if_exception_type(groq.RateLimitError)
+        )
+    
+    def _predict_yield(self, prompt: str, completion: str, dataset: CropDataset) -> CropPrediction:
 
         try:
             start_time = time.time()  # Start total prediction time
@@ -106,11 +115,11 @@ class PredictionAgent(Agent):
                 {"role": "user", "content": user_prompt}
             ]
             
-            # Count total tokens (system + user prompts)
+            # Count total tokens BEFORE the API call
             full_prompt = system_prompt + user_prompt
             prompt_tokens = self.track_tokens(full_prompt)
             
-            # Increment call count BEFORE the API call to capture retries
+            # Increment call count BEFORE the API call
             self.metrics.llm_metrics.call_count += 1
             
             llm_start_time = time.time()
@@ -134,13 +143,19 @@ class PredictionAgent(Agent):
                 question=prompt,
                 context=user_prompt
             )
+        except groq.RateLimitError as e:  # Use full path
+            self.logger.warning(f"Groq rate limit hit: {str(e)}")
+            raise
         except Exception as e:
             self.logger.error(f"Prediction failed: {str(e)}")
             if self.retry_count >= self.max_retries:
                 self.logger.error("Max retries reached")
             raise
 
-
+    def predict_yield(self, prompt: str, completion: str, dataset: CropDataset) -> CropPrediction:
+        """Execute with retry decorator applied"""
+        predict_yield_with_retry = self._get_retry_decorator()(self._predict_yield)
+        return predict_yield_with_retry(prompt, completion, dataset)
 
     def _extract_features(self, prompt: str) -> dict:
         pattern = r"precipitation of ([\d.]+).*humidity of ([\d.]+).*humidity of ([\d.]+)%.*temperature of ([\d.]+)°C.*crop ([^.]+)\."

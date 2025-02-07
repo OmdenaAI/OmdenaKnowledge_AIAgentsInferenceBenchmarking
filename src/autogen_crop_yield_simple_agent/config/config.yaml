@@ -6,9 +6,18 @@ data:
     metrics: "output/metrics"
 
 model:
-  name: "llama-3.3-70b-versatile"
+  name: "llama3-8b-8192"
   temperature: 0.01
   max_tokens: 1000
+  # Rate limiting values
+  max_calls: 4
+  pause_time: 30
+  token_limit: 90000
+  # Retry values
+  stop_after_attempt: 3
+  wait_multiplier: 60
+  wait_min: 180
+  wait_max: 300
 
 benchmark:
   iterations: 3

@@ -2,12 +2,13 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_groq import ChatGroq
-import yaml
+import groq
 import logging
 import os
 import time
 from simple_agent_common.utils import RateLimiter, TokenCounter
-from tenacity import retry, stop_after_attempt, wait_exponential
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+import re
 
 class BaseAgent(ABC):
     def __init__(self, name: str, system_prompt: str, logger: logging.Logger, config: Dict[str, Any]):
@@ -15,6 +16,7 @@ class BaseAgent(ABC):
         self.system_prompt = system_prompt
         self.config = config
         self.logger = logger
+
         self.metrics = {
             'llm_calls': 0,
             'latencies': [],
@@ -34,26 +36,56 @@ class BaseAgent(ABC):
             max_tokens=self.config["model"]["max_tokens"]
         )
 
-    def _extract_number(self, question: str, response: str) -> tuple[float, Optional[str]]:
-        # If we can't extract a number, return a large penalty
-        value = 1e6
+    def _extract_number(self, question: str, response: str) -> float:
+        """
+        Extract numerical value from response with proper error handling
+        
+        Args:
+            question: Original question for logging context
+            response: Response from LLM to parse
+            
+        Returns:
+            float: Extracted number or penalty value (1e6) if parsing fails
+        """
+        PENALTY_VALUE = 1e6
+        value = PENALTY_VALUE
+        response = response.strip()
         
         try:
-            """Extract numerical value """
-            response = response.strip()
             value = float(response)
-        
+            
         except (ValueError, IndexError, StopIteration):
             self.logger.info(f"Could not extract number for question: {question} from response: {response}")
             
+            try:
+                # Try regex to extract numerical values (integer or float)
+                numbers = re.findall(r'[-+]?\d*\.\d+|\d+', response)
+                
+                if numbers:
+                    # Take the last found number (most likely the answer)
+                    value = float(numbers[-1])
+                    self.logger.info(f"Extracted number with fallback for question: {question} from response: {response}")
+                else:
+                    self.logger.warning(f"No numbers found in response: {response}")
+                    
+            except Exception as e:
+                self.logger.error(f"Could not extract number with fallback from response: '{response}' for question: '{question}'. Error: {str(e)}")
+        
         return value
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=4, max=10),
-        reraise=True
-    )
-    def execute(self, prompt: str) -> Dict[str, Any]:
+    def _get_retry_decorator(self):
+        """Create retry decorator with config values"""
+        return retry(
+            stop=stop_after_attempt(self.config['model']['stop_after_attempt']),
+            wait=wait_exponential(
+                multiplier=self.config['model']['wait_multiplier'],
+                min=self.config['model']['wait_min'],
+                max=self.config['model']['wait_max']
+            ),
+            retry=retry_if_exception_type(groq.RateLimitError)
+        )
+
+    def _execute(self, prompt: str) -> Dict[str, Any]:
         """Execute the agent's task"""
         messages = [SystemMessage(content=self.system_prompt), HumanMessage(content=prompt)]
         try:
@@ -90,8 +122,16 @@ class BaseAgent(ABC):
                 'total_tokens': total_tokens,
                 'retry_count': self.retry_count
             }
+        except groq.RateLimitError as e:  # Use full path
+            self.logger.info(f"Groq rate limit hit: {str(e)}")
+            raise
         except Exception as e:
-            self.logger.error(f"Error executing task: {e}")
+            self.logger.error(f"Prediction failed: {str(e)}")
             if self.retry_count >= self.max_retries:
                 self.logger.error("Max retries reached")
             raise
+
+    def execute(self, prompt: str) -> Dict[str, Any]:
+        """Execute with retry decorator applied"""
+        execute_with_retry = self._get_retry_decorator()(self._execute)
+        return execute_with_retry(prompt)

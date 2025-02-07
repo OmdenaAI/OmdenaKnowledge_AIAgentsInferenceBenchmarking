@@ -61,8 +61,16 @@ def run_benchmark(config: Dict[str, Any], logger: logging.Logger) -> List[Dict[s
     config_list = get_groq_config(config, logger)
     agents = setup_agents(config, logger, config_list)
     
-    # Initialize handlers
-    rate_limiter = RateLimiter(max_calls=5, pause_time=20)
+    # Setup rate limiter
+    max_calls = config.get("model", {}).get("max_calls", 4)
+    pause_time = config.get("model", {}).get("pause_time", 30)
+    token_limit = config.get("model", {}).get("token_limit", 90000)
+
+    rate_limiter = RateLimiter(
+            max_calls=max_calls,  # More conservative
+            pause_time=pause_time,  # Groq's window
+            token_limit=token_limit  # Buffer below Groq's 100k limit
+        )
     
     # Load and prepare data once
     data_paths = Path(config['data']['paths']['crop_data'])

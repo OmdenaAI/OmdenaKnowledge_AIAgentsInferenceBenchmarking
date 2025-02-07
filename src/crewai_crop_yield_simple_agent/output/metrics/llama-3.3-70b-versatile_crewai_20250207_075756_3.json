@@ -1,0 +1,90 @@
+{
+  "model_name": "llama-3.3-70b-versatile",
+  "model_temperature": 0.01,
+  "model_max_tokens": 1000,
+  "random_few_shot": false,
+  "num_few_shot": 5,
+  "iterations": [
+    {
+      "iteration": 1,
+      "runtime": 601.9785768985748,
+      "memory_delta": 106.75,
+      "peak_memory": 473.09375,
+      "llm_calls": 25,
+      "avg_latency": 0.5819468879699707,
+      "total_prompt_tokens": 14084,
+      "tokens_per_call": 563.36,
+      "mae": 1473.96,
+      "mape": 11.17933349425226,
+      "rmse": 1704.578739747742,
+      "group_metrics": {}
+    },
+    {
+      "iteration": 2,
+      "runtime": 601.2598881721497,
+      "memory_delta": 122.703125,
+      "peak_memory": 489.046875,
+      "llm_calls": 25,
+      "avg_latency": 0.6495860576629638,
+      "total_prompt_tokens": 14084,
+      "tokens_per_call": 563.36,
+      "mae": 1493.92,
+      "mape": 11.415386667031406,
+      "rmse": 1707.807319342554,
+      "group_metrics": {}
+    },
+    {
+      "iteration": 3,
+      "runtime": 541.6961958408356,
+      "memory_delta": 147.296875,
+      "peak_memory": 513.640625,
+      "llm_calls": 25,
+      "avg_latency": 0.7174444580078125,
+      "total_prompt_tokens": 14084,
+      "tokens_per_call": 563.36,
+      "mae": 1433.44,
+      "mape": 10.93473057775158,
+      "rmse": 1640.4684452923805,
+      "group_metrics": {}
+    }
+  ],
+  "dataset_stats": {
+    "Cocoa, beans": {
+      "count": 39,
+      "yield_stats": {
+        "min": 5765.0,
+        "max": 13056.0,
+        "mean": 8883.128205128205,
+        "std": 1745.0305860611152
+      }
+    },
+    "Oil palm fruit": {
+      "count": 39,
+      "yield_stats": {
+        "min": 142425.0,
+        "max": 203399.0,
+        "mean": 175804.6923076923,
+        "std": 14919.86975241908
+      }
+    },
+    "Rice, paddy": {
+      "count": 39,
+      "yield_stats": {
+        "min": 24686.0,
+        "max": 42550.0,
+        "mean": 32099.666666666668,
+        "std": 4789.948435791753
+      }
+    },
+    "Rubber, natural": {
+      "count": 39,
+      "yield_stats": {
+        "min": 5249.0,
+        "max": 10285.0,
+        "mean": 7824.897435897436,
+        "std": 1600.2550420886337
+      }
+    }
+  },
+  "timestamp": "2025-02-07 07:57:56.851037"
+}

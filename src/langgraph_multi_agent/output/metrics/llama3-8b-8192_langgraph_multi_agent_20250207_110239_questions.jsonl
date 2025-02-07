@@ -1,0 +1,20 @@
+{"question": "What is the molar mass of sodium chloride (NaCl) in g/mol?", "answer": 58.44, "source_file": "chemistry_questions.jsonl"}
+{"question": "How many pairs of ribs do humans have?", "answer": 12, "source_file": "biology_questions.jsonl"}
+{"question": "How many electrons does a chlorine ion (Cl-) have?", "answer": 18.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the gestation period of a human in days?", "answer": 280, "source_file": "biology_questions.jsonl"}
+{"question": "What is the resistance of a 10V circuit with 2A current?", "answer": 5.0, "source_file": "physics_questions.jsonl"}
+{"question": "What is the atomic number of oxygen?", "answer": 8.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the volume of a cube with edge length 4?", "answer": 64, "source_file": "math_questions.jsonl"}
+{"question": "What is the sum of the first 10 natural numbers?", "answer": 55, "source_file": "math_questions.jsonl"}
+{"question": "What is the refractive index of water?", "answer": 1.33, "source_file": "physics_questions.jsonl"}
+{"question": "How many liters of blood does an average adult human have?", "answer": 5, "source_file": "biology_questions.jsonl"}
+{"question": "What is the molarity of a solution that contains 1 mole of solute in 1 liter of solution?", "answer": 1.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the molar mass of water (H2O) in g/mol?", "answer": 18.015, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the value of Planck\u2019s constant in J\u00b7s?", "answer": 6.626, "source_file": "physics_questions.jsonl"}
+{"question": "What is the hypotenuse of a right triangle with legs 6 and 8?", "answer": 10, "source_file": "math_questions.jsonl"}
+{"question": "How many neutrons are in an isotope of carbon-14?", "answer": 8.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the number of chambers in an amphibian heart?", "answer": 3, "source_file": "biology_questions.jsonl"}
+{"question": "What is the efficiency percentage of an ideal Carnot engine operating between 500K and 300K?", "answer": 40.0, "source_file": "physics_questions.jsonl"}
+{"question": "What is the remainder when 29 is divided by 5?", "answer": 4, "source_file": "math_questions.jsonl"}
+{"question": "What is the sum of the first 5 prime numbers?", "answer": 28, "source_file": "math_questions.jsonl"}
+{"question": "How many seconds are in one hour?", "answer": 3600.0, "source_file": "physics_questions.jsonl"}

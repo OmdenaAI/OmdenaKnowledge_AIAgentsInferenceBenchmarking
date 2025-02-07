@@ -5,7 +5,10 @@ from pydantic import Field, ConfigDict
 from .data_preparation_task import DataPreparationTask
 from .question_loading_task import QuestionLoadingTask
 from simple_agent_common.utils import RateLimiter, MemoryManager
+from simple_agent_common.utils.rate_limiter import RateLimitError
+import groq  # Import the module
 import logging
+import time
 
 
 class PredictionTask(Task):
@@ -63,27 +66,37 @@ class PredictionTask(Task):
         if not self.questions_task.questions:
             raise ValueError("No questions available from questions task")
         
-        rate_limiter = RateLimiter(max_calls=4, pause_time=20)
+        # Setup rate limiter
+        max_calls = self.config.get("model", {}).get("max_calls", 4)
+        pause_time = self.config.get("model", {}).get("pause_time", 30)
+        token_limit = self.config.get("model", {}).get("token_limit", 90000)
+
+        rate_limiter = RateLimiter(
+                max_calls=max_calls,  # More conservative
+                pause_time=pause_time,  # Groq's window
+                token_limit=token_limit  # Buffer below Groq's 100k limit
+            )
 
         for prompt, completion in self.questions_task.questions:
-            
-            # Track memory around prediction
-            memory_stats = self.memory_manager.get_memory_stats()
-
             with rate_limiter:
-                prediction = self.agent.predict_yield(
-                    prompt=prompt,
-                    completion=completion,
-                    dataset=self.prep_task.dataset
-                )
-            self.predictions.append(prediction)
+                tokens = self.agent.token_counter(prompt)
+                try:
+                    rate_limiter.check_tokens(tokens)
+                    prediction = self.agent.predict_yield(
+                        prompt=prompt,
+                        completion=completion,
+                        dataset=self.prep_task.dataset
+                    )
+                    self.predictions.append(prediction)
+                except (RateLimitError, groq.RateLimitError) as e:
+                    self.logger.warning(f"Rate limit hit: {e}")
+                    # Force a longer wait
+                    time.sleep(180)  # 3-minute cooldown
+                    raise
 
-            self.metrics.prediction_metrics.predictions.append(
-                (prediction.predicted_yield, prediction.actual_yield, None)
-            )
-            
-            # Track memory around prediction
-            memory_stats = self.memory_manager.get_memory_stats()
-            
+                self.metrics.prediction_metrics.predictions.append(
+                    (prediction.predicted_yield, prediction.actual_yield, None)
+                )
+                
         self.metrics.prediction_metrics.calculate_metrics()
         return f"Made {len(self.predictions)} yield predictions" 

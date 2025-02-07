@@ -1,19 +1,14 @@
 from crewai import Crew
 from langchain_groq import ChatGroq
-import yaml
 from pathlib import Path
-from dotenv import load_dotenv
 import os
-import sys
 import time
-import psutil
 import logging
 from agents import PredictionAgent, DataPreparationAgent
 from tasks import PredictionTask, DataPreparationTask, QuestionLoadingTask
 from simple_agent_common.data_classes import BenchmarkMetrics, IterationMetrics
 from simple_agent_common.utils import MemoryManager, load_env_vars, load_config, setup_logging
 from typing import Dict, Any, Optional, Callable
-from transformers import AutoTokenizer
 from simple_agent_common.utils.token_counter import TokenCounter
 
 def get_llm(config):
@@ -25,8 +20,7 @@ def get_llm(config):
         model=config['model']['name'],
         api_key=groq_key,
         temperature=config['model']['temperature'],
-        max_tokens=config['model']['max_tokens'],
-        max_retries=2
+        max_tokens=config['model']['max_tokens']
     )
 
 def get_token_counter() -> Callable[[str], int]:
@@ -134,7 +128,7 @@ def run_benchmark(config: dict, llm: ChatGroq, logger: logging.Logger) -> Benchm
         benchmark.iterations.append(iteration_metrics)
 
         # Help to minimize rate limiting
-        time.sleep(20)
+        #time.sleep(20)
 
     # Save benchmark results
     metrics_dir = Path(config['data']['paths']['metrics'])

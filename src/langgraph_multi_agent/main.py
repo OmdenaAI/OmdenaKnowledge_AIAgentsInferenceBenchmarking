@@ -13,10 +13,9 @@ from simple_agent_common.data_classes import BenchmarkMetrics, IterationMetrics,
 from simple_agent_common.utils import RateLimiter, MemoryManager, load_env_vars, load_config, setup_logging
 import logging
 import random
-from typing import List, Dict, Any
+from typing import Dict
 import numpy as np
 from pathlib import Path
-import yaml
 import time
 
 def run_iteration(config: Dict, logger: logging.Logger, iteration: int, dataset: Dataset, memory_manager: MemoryManager) -> Dict:
@@ -47,8 +46,16 @@ def run_iteration(config: Dict, logger: logging.Logger, iteration: int, dataset:
 
     prediction_metrics = PredictionMetrics()
     
-    # Initialize handlers
-    rate_limiter = RateLimiter(max_calls=5, pause_time=20)
+    # Setup rate limiter
+    max_calls = config.get("model", {}).get("max_calls", 4)
+    pause_time = config.get("model", {}).get("pause_time", 30)
+    token_limit = config.get("model", {}).get("token_limit", 90000)
+
+    rate_limiter = RateLimiter(
+            max_calls=max_calls,  # More conservative
+            pause_time=pause_time,  # Groq's window
+            token_limit=token_limit  # Buffer below Groq's 100k limit
+        )
 
     # Get initial memory state
     start_stats = memory_manager.get_memory_stats()
