@@ -4,6 +4,7 @@ from .env import load_env_vars
 from .memory import MemoryManager
 from .logging import setup_logging
 from .token_counter import TokenCounter
+from .dataset import Dataset
 
 __all__ = [
     'RateLimiter',
@@ -13,5 +14,6 @@ __all__ = [
     'load_env_vars',
     'MemoryManager',
     'setup_logging',
-    'TokenCounter'
+    'TokenCounter',
+    'Dataset'
 ] 

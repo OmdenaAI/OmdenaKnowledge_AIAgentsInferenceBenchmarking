@@ -1,41 +1,50 @@
-from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
-from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_groq import ChatGroq
-import groq
-import logging
-import os
-import time
+from typing import Dict, Any, List, Optional
+import autogen
 from simple_agent_common.utils import RateLimiter, TokenCounter
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+import time
 import re
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+import os
+import logging
+from openai import RateLimitError, OpenAI
 
-class BaseAgent(ABC):
-    def __init__(self, name: str, system_prompt: str, logger: logging.Logger, config: Dict[str, Any]):
+class BaseAgent():
+    def __init__(self, name: str, system_prompt: str, logger: logging.Logger, llm_config: List[Dict[str, Any]], 
+                 config: Dict[str, Any]):
+
         self.name = name
-        self.system_prompt = system_prompt
-        self.config = config
         self.logger = logger
 
+        self.llm_config = llm_config
+        self.config = config
+        self.rate_limiter = RateLimiter(
+            max_calls=config["model"]["max_calls"],
+            pause_time=config["model"]["pause_time"]
+        )
+        self.token_counter = TokenCounter()
         self.metrics = {
             'llm_calls': 0,
             'latencies': [],
             'prompt_tokens': [],
-            'predictions': []
+            'total_tokens': 0,
+            'total_latency': 0
         }
-        self.max_retries = 3
-        self.retry_count = 0
-        self.rate_limiter = RateLimiter(max_calls=4, pause_time=20)
-        self.token_counter = TokenCounter()
         
-        # Initialize LLM
-        self.llm = ChatGroq(
-            api_key=os.getenv("GROQ_API_KEY"),
-            model_name=self.config["model"]["name"],
-            temperature=self.config["model"]["temperature"],
-            max_tokens=self.config["model"]["max_tokens"]
+        # Create AutoGen assistant with proper configuration
+        self.assistant = autogen.AssistantAgent(
+            name=name,
+            system_message=system_prompt,
+            llm_config={"config_list": self.llm_config}
         )
-
+        
+        # Create user proxy for interactions with code execution disabled
+        self.user_proxy = autogen.UserProxyAgent(
+            name="user_proxy",
+            human_input_mode="NEVER",
+            max_consecutive_auto_reply=0,
+            code_execution_config=False  # Disable code execution
+        )
+        
     def _extract_number(self, question: str, response: str) -> float:
         """
         Extract numerical value from response with proper error handling
@@ -81,36 +90,47 @@ class BaseAgent(ABC):
                 min=self.config['model']['wait_min'],
                 max=self.config['model']['wait_max']
             ),
-            retry=retry_if_exception_type(groq.RateLimitError)
+            retry=retry_if_exception_type(RateLimitError)
         )
 
+    def execute(self, prompt: str) -> Dict[str, Any]:
+        execute_with_retry = self._get_retry_decorator()(self._execute)
+        return execute_with_retry(prompt)
+
     def _execute(self, prompt: str) -> Dict[str, Any]:
-        """Execute the agent's task"""
-        messages = [SystemMessage(content=self.system_prompt), HumanMessage(content=prompt)]
+        """Execute with metrics tracking"""
         try:
-            # Count both system and user prompt tokens since both are used in the chat
-            system_tokens = self.token_counter.count_tokens(self.system_prompt)
-            user_tokens = self.token_counter.count_tokens(prompt)
-            prompt_tokens = system_tokens + user_tokens
+            start_time = time.time()
             
-            # Track total prompt tokens
+            # Track prompt tokens
+            prompt_tokens = self.token_counter.count_tokens(prompt)
             self.metrics['prompt_tokens'].append(prompt_tokens)
             
-            # Track API call (including retries)
-            self.metrics['llm_calls'] += 1
-
-            with self.rate_limiter:
-                start_time = time.time()
-                response = self.llm.invoke(messages)
-                end_time = time.time()
+            # Use direct chat with assistant
+            self.user_proxy.initiate_chat(
+                self.assistant,
+                message=prompt
+            )
             
+            # Get the last message using AutoGen's standard pattern
+            response = self.assistant.last_message()["content"]
+
+            if not response:
+                raise ValueError("No response received")
+            
+            # Extract numerical answer
+            predicted_value = self._extract_number(prompt, response)
+            
+            # Update metrics
+            end_time = time.time()
             latency = end_time - start_time
             self.metrics['latencies'].append(latency)
+            self.metrics['llm_calls'] += 1
+            self.metrics['total_latency'] += latency
             
-            # Count response tokens
-            response_tokens = self.token_counter.count_tokens(response.content)
+            response_tokens = self.token_counter.count_tokens(response)
             total_tokens = prompt_tokens + response_tokens
-            predicted_value = self._extract_number(prompt, response.content)
+            self.metrics['total_tokens'] += total_tokens
             
             return {
                 'agent': self.name,
@@ -119,15 +139,10 @@ class BaseAgent(ABC):
                 'prompt_tokens': prompt_tokens,
                 'response_tokens': response_tokens,
                 'total_tokens': total_tokens,
-                'retry_count': self.retry_count
+                'retry_count': 0
             }
         except Exception as e:
             self.logger.error(f"Prediction failed: {str(e)}")
             if self.retry_count >= self.max_retries:
                 self.logger.error("Max retries reached")
             raise
-
-    def execute(self, prompt: str) -> Dict[str, Any]:
-        """Execute with retry decorator applied"""
-        execute_with_retry = self._get_retry_decorator()(self._execute)
-        return execute_with_retry(prompt)

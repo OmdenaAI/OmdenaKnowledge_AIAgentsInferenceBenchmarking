@@ -4,17 +4,30 @@ from langgraph.prebuilt import ToolExecutor
 from langchain.schema import BaseMessage, HumanMessage
 import operator
 import logging
+from simple_agent_common.multiagent import OrchestratorBase
+from agents.router import QueryRouter
+from agents.math_agent import MathAgent
+from agents.physics_agent import PhysicsAgent
+from agents.chemistry_agent import ChemistryAgent
+from agents.biology_agent import BiologyAgent
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
     current_agent: str
     final_answer: Dict[str, Any]
 
-class MultiAgentOrchestrator:
-    def __init__(self, router, agents):
-        self.router = router
-        self.agents = agents
-        self.logger = logging.getLogger(__name__)
+class MultiAgentOrchestrator(OrchestratorBase):
+    def __init__(self, config: Dict[str, Any], logger: logging.Logger):
+        self.config = config
+        self.logger = logger
+        self.router = QueryRouter(self.logger, self.config)
+        self.agents = {
+            "math": MathAgent(self.logger, self.config),
+            "physics": PhysicsAgent(self.logger, self.config),
+            "chemistry": ChemistryAgent(self.logger, self.config),
+            "biology": BiologyAgent(self.logger, self.config)
+        }
+        
         self.graph = self._build_graph()
 
     def _build_graph(self) -> Graph:

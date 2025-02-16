@@ -102,7 +102,7 @@ class IterationMetrics(BaseModel):
     rmse: float = Field(..., description="Root Mean Square Error")
     group_metrics: Dict[str, Dict[str, float]] = Field(
         default_factory=dict,
-        description="Optional group-wise metrics. Only populated when predictions contain group labels. Format: {'group_name': {'mae': float, 'mape': float, 'rmse': float}}"
+        description="Optional group-wise metrics. Only populated when predictions contain group labels."
     )
 
 class BenchmarkMetrics(BaseModel):
@@ -115,6 +115,8 @@ class BenchmarkMetrics(BaseModel):
     iterations: List[IterationMetrics] = Field(default_factory=list)
     dataset_stats: Dict[str, Dict] = Field(default_factory=dict)
     timestamp: datetime = Field(default_factory=datetime.now)
+    memory_delta: float = Field(default=0.0, description="Total memory delta across entire benchmark in MB")
+    peak_memory: float = Field(default=0.0, description="Peak memory usage across entire benchmark in MB")
     
     def __init__(self, config: Dict[str, Any]):
         super().__init__(
@@ -125,7 +127,9 @@ class BenchmarkMetrics(BaseModel):
             num_few_shot=config.get('benchmark', {}).get('num_few_shot', 0),
             iterations=[],
             dataset_stats={},
-            timestamp=datetime.now()
+            timestamp=datetime.now(),
+            memory_delta=0.0,
+            peak_memory=0.0
         )
 
     def _print_benchmark_summary(self) -> None:
@@ -248,6 +252,19 @@ class BenchmarkMetrics(BaseModel):
         ax2.set_xlabel('Iteration')
         ax2.set_ylabel('Runtime (seconds)')
         ax2.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
+        
+        # Force y-axis to show actual runtime values
+        min_runtime = min(runtimes)
+        max_runtime = max(runtimes)
+        ax2.set_ylim(bottom=min_runtime * 0.95, top=max_runtime * 1.05)  # 5% padding
+        
+        # Add value annotations for each point
+        for i, runtime in zip(iterations, runtimes):
+            ax2.annotate(f'{runtime:.1f}s', 
+                        (i, runtime),
+                        textcoords="offset points",
+                        xytext=(0,10),
+                        ha='center')
         
         # Plot 3: Memory Delta
         memory_deltas = [m.memory_delta for m in self.iterations]

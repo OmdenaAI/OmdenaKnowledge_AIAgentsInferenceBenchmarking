@@ -1,0 +1,118 @@
+{
+  "model_name": "llama3-70b-8192",
+  "model_temperature": 0.01,
+  "model_max_tokens": 1000,
+  "random_few_shot": false,
+  "num_few_shot": 0,
+  "iterations": [
+    {
+      "iteration": 1,
+      "runtime": 121.43722319602966,
+      "memory_delta": 2.421875,
+      "peak_memory": 385.25,
+      "llm_calls": 20,
+      "avg_latency": 0.4677955985069275,
+      "total_prompt_tokens": 298,
+      "tokens_per_call": 21.05,
+      "mae": 0.4114167764616279,
+      "mape": 10.000014833692875,
+      "rmse": 1.524307713563437,
+      "group_metrics": {
+        "physics": {
+          "mae": 1.3713333333333333,
+          "mape": 33.33333333333333,
+          "rmse": 2.7829923942883257
+        },
+        "biology": {
+          "mae": 0.0,
+          "mape": 0.0,
+          "rmse": 0.0
+        },
+        "chemistry": {
+          "mae": 0.0,
+          "mape": 0.0,
+          "rmse": 0.0
+        },
+        "math": {
+          "mae": 0.00011184307751932465,
+          "mape": 9.889128581600278e-05,
+          "rmse": 0.0001937178927383348
+        }
+      }
+    },
+    {
+      "iteration": 2,
+      "runtime": 120.09775686264038,
+      "memory_delta": 0.0,
+      "peak_memory": 385.25,
+      "llm_calls": 20,
+      "avg_latency": 0.026266062259674074,
+      "total_prompt_tokens": 298,
+      "tokens_per_call": 21.05,
+      "mae": 0.4114167764616279,
+      "mape": 10.000014833692875,
+      "rmse": 1.524307713563437,
+      "group_metrics": {
+        "physics": {
+          "mae": 1.3713333333333333,
+          "mape": 33.33333333333333,
+          "rmse": 2.7829923942883257
+        },
+        "biology": {
+          "mae": 0.0,
+          "mape": 0.0,
+          "rmse": 0.0
+        },
+        "chemistry": {
+          "mae": 0.0,
+          "mape": 0.0,
+          "rmse": 0.0
+        },
+        "math": {
+          "mae": 0.00011184307751932465,
+          "mape": 9.889128581600278e-05,
+          "rmse": 0.0001937178927383348
+        }
+      }
+    },
+    {
+      "iteration": 3,
+      "runtime": 120.09569191932678,
+      "memory_delta": 0.15625,
+      "peak_memory": 385.40625,
+      "llm_calls": 20,
+      "avg_latency": 0.02386760711669922,
+      "total_prompt_tokens": 298,
+      "tokens_per_call": 21.05,
+      "mae": 0.4114167764616279,
+      "mape": 10.000014833692875,
+      "rmse": 1.524307713563437,
+      "group_metrics": {
+        "physics": {
+          "mae": 1.3713333333333333,
+          "mape": 33.33333333333333,
+          "rmse": 2.7829923942883257
+        },
+        "biology": {
+          "mae": 0.0,
+          "mape": 0.0,
+          "rmse": 0.0
+        },
+        "chemistry": {
+          "mae": 0.0,
+          "mape": 0.0,
+          "rmse": 0.0
+        },
+        "math": {
+          "mae": 0.00011184307751932465,
+          "mape": 9.889128581600278e-05,
+          "rmse": 0.0001937178927383348
+        }
+      }
+    }
+  ],
+  "dataset_stats": {},
+  "timestamp": "2025-02-16 08:45:54.338148",
+  "memory_delta": 0.15625,
+  "peak_memory": 385.40625
+}

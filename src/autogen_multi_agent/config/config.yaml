@@ -3,21 +3,18 @@ data:
     input_dir: "data"
     env: "~/src/python/.env"
     metrics: "output/metrics"
-  
 
 benchmark:
-  iterations: 3  # Number of times to run the complete test
+  iterations: 3
   total_questions: 20
 
 model:
     name: "llama3-70b-8192"
     temperature: 0.01
     max_tokens: 1000
-    # Rate limiting values
     max_calls: 4
     pause_time: 30
     token_limit: 90000
-    # Retry values
     stop_after_attempt: 3
     wait_multiplier: 60
     wait_min: 180

@@ -6,6 +6,7 @@ from utils.token_counter import LangChainTokenCounter
 from tenacity import retry, stop_after_attempt, wait_exponential
 import logging
 import time
+from simple_agent_common.multiagent import ROUTER_PROMPT
 
 class QueryRouter:
     def __init__(self, logger: logging.Logger, config: Dict[str, Any]):
@@ -39,10 +40,7 @@ class QueryRouter:
     def determine_agent(self, question: str) -> str:
         """Uses Groq LLM to determine the correct agent."""
         start_time = time.time()
-        system_prompt = (
-            "You are a query classifier. You must classify a question into one of the following categories: "
-            "math, physics, chemistry, or biology. Return only the category name."
-        )
+        system_prompt = (ROUTER_PROMPT)
         
         messages = [
             SystemMessage(content=system_prompt),
