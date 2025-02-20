@@ -1,1 +1,26 @@
 # List of dependencies
+# requirements.txt
+
+# Core Dependencies
+numpy
+pandas
+matplotlib
+pyyaml
+# logging
+
+# AI Frameworks
+openai
+langchain
+langchain-ollama
+langgraph
+langchain-community
+swarm @ git+https://github.com/openai/swarm.git 
+crewai
+autogen
+
+# Model Dependencies
+ollama
+pydantic  # Ensures compatibility with CrewAI
+
+# Testing
+# unittest

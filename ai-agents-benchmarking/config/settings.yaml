@@ -1,1 +1,43 @@
 # Configuration settings for benchmarking
+
+benchmark:
+  mode: "automatic"  # Options: automatic, manual
+  log_level: "info"
+  num_runs: 5
+
+llm_execution:
+  model_name: "ollama/llama3"  # Or any other LLM
+  api_base: "http://localhost:11434"  # Unified API endpoint
+  api_key: "your-api-key"
+
+frameworks:
+  - name: "CrewAI"
+    enabled: true
+  - name: "LangChain"
+    enabled: false
+  - name: "LangGraph"
+    enabled: false
+  - name: "Swarm"
+    enabled: false
+  - name: "AutoGen"
+    enabled: false
+
+tasks:
+  simple:
+    timeout: 10
+    max_memory: "1GB"
+  complex:
+    timeout: 30
+    max_memory: "4GB"
+
+output:
+  save_results: true
+  results_dir: "data/results"
+  leaderboard_file: "results/public_leaderboard.csv"
+  log_file: "logs/benchmark.log"
+
+optimization:
+  enable_tuning: true
+  parameter_range:
+    batch_size: [1, 16, 32, 64]
+    num_threads: [1, 2, 4, 8]

@@ -1,1 +1,27 @@
 # Ignore unnecessary files
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore temporary swap files
+*.swp
+
+# Ignore MacOS system files
+.DS_Store
+
+# Ignore virtual environments
+venv/
+.env
+
+# Ignore CSV files
+*.csv
+
+# Ignore PNG files
+*.png
+
+# Ignore results directory (if it stores all generated files)
+results/
+
+# Optional: Ignore log files
+*.log
