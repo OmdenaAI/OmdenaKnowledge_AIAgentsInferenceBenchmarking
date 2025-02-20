@@ -14,7 +14,7 @@ __pycache__/
 venv/
 .env
 
-# Ignore CSV files
+s# Ignore CSV files
 *.csv
 
 # Ignore PNG files

@@ -1,5 +1,3 @@
-# frameworks/crewai_benchmark.py
-
 from benchmarks.simple_tasks import SIMPLE_TASKS
 from benchmarks.complex_tasks import COMPLEX_TASKS
 from typing import Dict, Any
@@ -9,11 +7,11 @@ import time
 from langchain_community.chat_models import ChatOpenAI
 from langchain_community.llms import OpenAI
 from utils.latency_tracker import LatencyTracker
-from utils.result_saver import save_results_to_csv, plot_benchmark_results, compare_benchmarks,load_results_from_csv
-import logging
-import os
+from utils.result_saver import save_results_to_csv, plot_benchmark_results, compare_benchmarks, load_results_from_csv
 from utils.token_tracker import TokenTracker
 from utils.memory_tracker import MemoryTracker
+from utils.accuracy_calculator import calculate_accuracy  # ✅ NEW IMPORT
+import os
 
 # ==============================
 # ✅ GLOBAL LOGGING CONFIGURATION
@@ -36,7 +34,7 @@ try:
     from crewai import Crew, Agent, Task, LLM, Process
 except ImportError:
     raise ImportError("CrewAI is not installed. Please install it using: pip install crewai")
-    
+
 # ==============================
 # ✅ LOAD CONFIGURATION
 # ==============================
@@ -93,8 +91,6 @@ def get_crewai_agent(model_name=None):
 # ✅ EXECUTE TASKS WITH CREWAI
 # ==============================
 def execute_task_with_crewai(task_func, model_name=None):
-    from utils.latency_tracker import LatencyTracker
-
     tracker = LatencyTracker()
     memory_tracker = MemoryTracker()
     token_tracker = TokenTracker(model_name or "gpt-4")
@@ -138,7 +134,7 @@ def execute_task_with_crewai(task_func, model_name=None):
         response_tokens = token_tracker.count_tokens(str(result))
         total_tokens = token_tracker.get_total_tokens()
 
-        # Accuracy check
+        # ✅ Use refactored accuracy function
         accuracy = calculate_accuracy(result, expected_answer)
 
         # ✅ Output with resource usage
@@ -154,7 +150,6 @@ def execute_task_with_crewai(task_func, model_name=None):
         peak_memory = memory_tracker.stop()
         print(f"❌ Error: {e} | Time: {exec_time}s | Memory: {peak_memory:.2f} MB")
         return 0.0, exec_time, 0, peak_memory
-
 
 # ==============================
 # ✅ BENCHMARK ALL TASKS
@@ -189,35 +184,8 @@ def benchmark_crewai():
 
     print(f"⏰ Total Benchmark Time: {total_time:.2f}s")
 
-
-# ==============================
-# ✅ ACCURACY CALCULATION
-# ==============================
-def calculate_accuracy(result, expected_answer):
-    """Calculate accuracy for tasks with known answers."""
-    # Sanitize result (strip special characters)
-    import re
-    result = re.sub(r'[^\w\s]', '', str(result)).lower().strip()
-    expected_answer = str(expected_answer).lower().strip()
-
-    # ✅ Numeric Match
-    try:
-        if result.replace('.', '', 1).isdigit() and expected_answer.replace('.', '', 1).isdigit():
-            return 100.0 if abs(float(result) - float(expected_answer)) < 0.01 else 0.0
-    except ValueError:
-        pass
-
-    # ✅ Exact or Partial Match
-    if result == expected_answer:
-        return 100.0
-    elif expected_answer in result:
-        return 75.0
-    return 0.0
-
-
 # ==============================
 # ✅ MAIN FUNCTION
 # ==============================
 if __name__ == "__main__":
     benchmark_crewai()
-
