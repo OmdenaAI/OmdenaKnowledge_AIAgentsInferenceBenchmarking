@@ -2,7 +2,6 @@ from benchmarks.simple_tasks import SIMPLE_TASKS
 from benchmarks.complex_tasks import COMPLEX_TASKS
 from typing import Dict, Any
 import logging
-import yaml
 import time
 from langchain_community.chat_models import ChatOpenAI
 from langchain_community.llms import OpenAI
@@ -10,7 +9,8 @@ from utils.latency_tracker import LatencyTracker
 from utils.result_saver import save_results_to_csv, plot_benchmark_results, compare_benchmarks, load_results_from_csv
 from utils.token_tracker import TokenTracker
 from utils.memory_tracker import MemoryTracker
-from utils.accuracy_calculator import calculate_accuracy  # ✅ NEW IMPORT
+from utils.accuracy_calculator import calculate_accuracy  # ✅ Accuracy in utils
+from utils.config_loader import get_llm_config  # ✅ Config loader in utils
 import os
 
 # ==============================
@@ -34,35 +34,6 @@ try:
     from crewai import Crew, Agent, Task, LLM, Process
 except ImportError:
     raise ImportError("CrewAI is not installed. Please install it using: pip install crewai")
-
-# ==============================
-# ✅ LOAD CONFIGURATION
-# ==============================
-def get_llm_config(model_name=None):
-    """Load LLM configuration from settings.yaml using a unified endpoint."""
-    try:
-        config_path = os.path.join("config", "settings.yaml")
-        with open(config_path, 'r') as f:
-            settings = yaml.safe_load(f)
-
-        llm_settings = settings.get('llm_execution', {})
-
-        config = {
-            'model_name': model_name or llm_settings.get('model_name', 'default_model'),
-            'base_url': llm_settings.get('api_base', ''),
-            'api_key': llm_settings.get('api_key', ''),
-            'temperature': 0.7  # Default temperature
-        }
-
-        logger.debug(f"Loaded LLM Config: {config}")
-        return config
-
-    except FileNotFoundError:
-        raise FileNotFoundError(f"⚠️ settings.yaml not found at {config_path}")
-    except yaml.YAMLError as e:
-        raise ValueError(f"⚠️ Error parsing YAML file: {e}")
-    except Exception as e:
-        raise Exception(f"⚠️ Unexpected error loading LLM config: {e}")
 
 # ==============================
 # ✅ CREWAI AGENT SETUP

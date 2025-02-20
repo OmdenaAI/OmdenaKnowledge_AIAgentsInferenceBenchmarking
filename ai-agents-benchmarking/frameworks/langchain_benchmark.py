@@ -2,10 +2,9 @@
 
 from benchmarks.simple_tasks import SIMPLE_TASKS
 from benchmarks.complex_tasks import COMPLEX_TASKS
-from utils.config_loader import config
 from langchain_community.chat_models import ChatOpenAI
 from langchain_community.llms import OpenAI
-
+from utils.config_loader import get_llm_config  # ✅ Config loader in utils
 
 # Import LangChain framework
 try:
