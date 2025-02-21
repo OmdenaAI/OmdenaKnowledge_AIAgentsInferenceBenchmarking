@@ -1,0 +1,10 @@
+Query,Latency (s),Token Usage,Completed (1/0),Escalated (1/0)
+How do I reset my password?,4.044851779937744,325,1,False
+What should I do if my internet is slow?,3.7136199474334717,423,1,False
+Can you help me recover my account?,2.918703317642212,189,1,False
+The website is not loading. What can I do?,3.7775447368621826,413,1,False
+I forgot my email password. How can I reset it?,3.634850263595581,386,1,False
+
+MAE,0.0
+MAPE,0.0
+RMSE,0.0
