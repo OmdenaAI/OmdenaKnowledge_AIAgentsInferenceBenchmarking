@@ -6,12 +6,14 @@ import time
 from langchain_community.chat_models import ChatOpenAI
 from langchain_community.llms import OpenAI
 from utils.latency_tracker import LatencyTracker
-from utils.result_saver import save_results_to_csv, plot_benchmark_results, compare_benchmarks, load_results_from_csv
+from utils.result_saver import save_results_to_csv, plot_benchmark_results, load_results_from_csv
 from utils.token_tracker import TokenTracker
 from utils.memory_tracker import MemoryTracker
 from utils.accuracy_calculator import calculate_accuracy  # ✅ Accuracy in utils
 from utils.config_loader import get_llm_config  # ✅ Config loader in utils
-import os
+import os,re
+from datetime import datetime
+
 
 # ==============================
 # ✅ GLOBAL LOGGING CONFIGURATION
@@ -26,6 +28,12 @@ for noisy_logger in ['LiteLLM', 'httpx', 'opentelemetry.trace', 'autogen.import_
     logging.getLogger(noisy_logger).setLevel(logging.ERROR)
 
 logger = logging.getLogger(__name__)
+
+# ==============================
+# ✅ FRAMEWORK NAME
+# ==============================
+def get_crewai_framework_name():
+    return "CrewAI"
 
 # ==============================
 # ✅ IMPORT CrewAI FRAMEWORK
@@ -43,7 +51,7 @@ def get_crewai_agent(model_name=None):
     llm_config = get_llm_config(model_name)
 
     llm = LLM(
-        model=llm_config['model_name'],
+        model=f"ollama/{llm_config['model_name']}", # Always add "ollama/" prefix for crewai local call.
         base_url=llm_config['base_url'],
         api_key=llm_config['api_key'],
         temperature=llm_config['temperature']
@@ -64,8 +72,6 @@ def get_crewai_agent(model_name=None):
 def execute_task_with_crewai(task_func, model_name=None):
     tracker = LatencyTracker()
     memory_tracker = MemoryTracker()
-    token_tracker = TokenTracker(model_name or "gpt-4")
-
     tracker.start()
     memory_tracker.start()
 
@@ -74,9 +80,6 @@ def execute_task_with_crewai(task_func, model_name=None):
         prompt = task_data["prompt"]
         expected_answer = task_data.get('expected_answer', '')
         task_type = task_data.get('task_type', 'task')
-
-        # Count tokens for the prompt
-        token_count = token_tracker.count_tokens(prompt)
 
         # Initialize CrewAI agent
         agent = get_crewai_agent(model_name)
@@ -94,6 +97,7 @@ def execute_task_with_crewai(task_func, model_name=None):
             agents=[agent],
             tasks=[task],
             process=Process.sequential
+            # process=Process.hierarchical
         )
 
         # Execute the task
@@ -101,10 +105,13 @@ def execute_task_with_crewai(task_func, model_name=None):
         exec_time = tracker.stop()
         peak_memory = memory_tracker.stop()
 
-        # Calculate tokens for the result
-        response_tokens = token_tracker.count_tokens(str(result))
-        total_tokens = token_tracker.get_total_tokens()
-
+        # Access token usage metrics from crew object
+        total_tokens = 0
+        try:
+            total_tokens = crew.usage_metrics.total_tokens
+        except Exception as e:
+          logger.error(f"Error getting token usage: {e}")
+          
         # ✅ Use refactored accuracy function
         accuracy = calculate_accuracy(result, expected_answer)
 
@@ -149,9 +156,10 @@ def benchmark_crewai():
     total_time = total_tracker.stop()
 
     # Save and Plot Results
-    csv_path = save_results_to_csv(all_results)
+    framework_name = get_crewai_framework_name()
+    csv_path = save_results_to_csv(all_results, framework_name)
     df = load_results_from_csv(csv_path)
-    plot_benchmark_results(df, title="CrewAI Benchmark", save_path=csv_path.replace(".csv", ""))
+    plot_benchmark_results(df, title=f"{framework_name} Benchmark", save_path=csv_path)
 
     print(f"⏰ Total Benchmark Time: {total_time:.2f}s")
 

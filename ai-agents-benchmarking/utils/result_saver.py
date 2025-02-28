@@ -4,31 +4,36 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 from datetime import datetime
+import logging
 
-def save_results_to_csv(results, filename=None, directory="results"):
+logger = logging.getLogger(__name__)
+
+def save_results_to_csv(results, framework_name, directory="data/results"):
     """
     Save benchmarking results to a timestamped CSV file.
 
     Args:
         results (list): List of tuples (Task, Accuracy, Execution Time, Tokens, Memory Usage).
-        filename (str): Optional filename. If None, generates timestamped filename.
+        framework_name (str): The framework name, for example `CrewAI`
         directory (str): Directory to save results.
     """
     os.makedirs(directory, exist_ok=True)
-    
-    if not filename:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"benchmark_results_{timestamp}.csv"
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"benchmark_results_{framework_name}_{timestamp}.csv"
 
     file_path = os.path.join(directory, filename)
-    
+
     # ✅ Updated columns to match data structure
     df = pd.DataFrame(results, columns=["Task", "Accuracy", "Execution Time", "Tokens", "Memory Usage"])
-    
+
+    # Add framework information to the data
+    df['Framework'] = framework_name
+
     # Save using UTF-8 encoding to avoid encoding errors
     df.to_csv(file_path, index=False, encoding='utf-8')
 
-    print(f"✅ Results saved to {file_path}")
+    logger.info(f"✅ Results saved to {file_path}")
     return file_path
 
 
@@ -50,14 +55,14 @@ def load_results_from_csv(filepath):
             # Fallback to ISO-8859-1 if UTF-8 fails
             df = pd.read_csv(filepath, encoding='ISO-8859-1', errors='replace')
 
-        print(f"📊 Loaded results from {filepath}")
+        logger.info(f"📊 Loaded results from {filepath}")
         return df
     else:
-        print(f"❌ File not found: {filepath}")
+        logger.warning(f"❌ File not found: {filepath}")
         return None
 
 
-def plot_benchmark_results(df, title="Benchmark Results", save_path=None):
+def plot_benchmark_results(df, title, save_path=None):
     """
     Plot Accuracy, Execution Time, Tokens, and Memory Usage for each task.
 
@@ -66,7 +71,11 @@ def plot_benchmark_results(df, title="Benchmark Results", save_path=None):
         title (str): Title of the plot.
         save_path (str): If provided, saves the plot as PNG.
     """
-    tasks = df["Task"]
+    if df.empty:
+        logger.warning("DataFrame is empty. Skipping plot generation.")
+        return
+
+    tasks = df["Task"].astype(str)
     accuracy = df["Accuracy"]
     exec_time = df["Execution Time"]
     tokens = df["Tokens"]
@@ -78,12 +87,12 @@ def plot_benchmark_results(df, title="Benchmark Results", save_path=None):
     plt.title(f"{title} - Accuracy")
     plt.xlabel("Tasks")
     plt.ylabel("Accuracy (%)")
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
 
     if save_path:
         plt.savefig(f"{save_path}_accuracy.png")
-    plt.show()
+    plt.close()
 
     # Plot Execution Time
     plt.figure(figsize=(12, 5))
@@ -91,12 +100,12 @@ def plot_benchmark_results(df, title="Benchmark Results", save_path=None):
     plt.title(f"{title} - Execution Time")
     plt.xlabel("Tasks")
     plt.ylabel("Time (s)")
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
 
     if save_path:
         plt.savefig(f"{save_path}_time.png")
-    plt.show()
+    plt.close()
 
     # Plot Token Usage
     plt.figure(figsize=(12, 5))
@@ -104,12 +113,12 @@ def plot_benchmark_results(df, title="Benchmark Results", save_path=None):
     plt.title(f"{title} - Token Usage")
     plt.xlabel("Tasks")
     plt.ylabel("Tokens")
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
 
     if save_path:
         plt.savefig(f"{save_path}_tokens.png")
-    plt.show()
+    plt.close()
 
     # Plot Memory Usage
     plt.figure(figsize=(12, 5))
@@ -117,57 +126,11 @@ def plot_benchmark_results(df, title="Benchmark Results", save_path=None):
     plt.title(f"{title} - Memory Usage")
     plt.xlabel("Tasks")
     plt.ylabel("Memory (MB)")
-    plt.xticks(rotation=45)
+    plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
 
     if save_path:
         plt.savefig(f"{save_path}_memory.png")
-    plt.show()
+    plt.close()
 
-
-def compare_benchmarks(file_paths):
-    """
-    Compare multiple benchmark runs.
-
-    Args:
-        file_paths (list): List of CSV file paths to compare.
-    """
-    combined_df = pd.DataFrame()
-
-    for file in file_paths:
-        df = load_results_from_csv(file)
-        if df is not None:
-            df["Run"] = os.path.basename(file).replace(".csv", "")
-            combined_df = pd.concat([combined_df, df])
-
-    if combined_df.empty:
-        print("❌ No data to compare.")
-        return
-
-    # Plot Accuracy Comparison
-    plt.figure(figsize=(14, 6))
-    for run in combined_df["Run"].unique():
-        run_df = combined_df[combined_df["Run"] == run]
-        plt.plot(run_df["Task"], run_df["Accuracy"], marker='o', label=run)
-
-    plt.title("Benchmark Accuracy Comparison")
-    plt.xlabel("Tasks")
-    plt.ylabel("Accuracy (%)")
-    plt.legend()
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.show()
-
-    # Plot Execution Time Comparison
-    plt.figure(figsize=(14, 6))
-    for run in combined_df["Run"].unique():
-        run_df = combined_df[combined_df["Run"] == run]
-        plt.plot(run_df["Task"], run_df["Execution Time"], marker='o', label=run)
-
-    plt.title("Benchmark Execution Time Comparison")
-    plt.xlabel("Tasks")
-    plt.ylabel("Execution Time (s)")
-    plt.legend()
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.show()
+    logger.info(f"📊 Plots generated")

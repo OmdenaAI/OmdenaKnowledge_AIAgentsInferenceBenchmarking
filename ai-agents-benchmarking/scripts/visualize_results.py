@@ -34,15 +34,17 @@ def run_all_benchmarks():
 
 def visualize_results(result_file="results/public_leaderboard.csv"):
     """Generates visualization from benchmark results."""
+    logging.info(f"Visualizing results from {result_file}")
     try:
         df = pd.read_csv(result_file)
+        
         if df.empty:
             logging.warning("No results found in leaderboard.")
             return
         
         # Plot inference time comparison
         plt.figure(figsize=(10, 5))
-        df.groupby("framework")["inference_time"].mean().plot(kind="bar", color="skyblue", edgecolor="black")
+        df.groupby("Framework")["Average Time"].mean().plot(kind="bar", color="skyblue", edgecolor="black")
         plt.xlabel("Framework")
         plt.ylabel("Avg Inference Time (seconds)")
         plt.title("AI Agent Inference Time Comparison")
@@ -52,7 +54,7 @@ def visualize_results(result_file="results/public_leaderboard.csv"):
         
         # Plot accuracy comparison
         plt.figure(figsize=(10, 5))
-        df.groupby("framework")["accuracy"].mean().plot(kind="bar", color="lightcoral", edgecolor="black")
+        df.groupby("Framework")["Average Accuracy"].mean().plot(kind="bar", color="lightcoral", edgecolor="black")
         plt.xlabel("Framework")
         plt.ylabel("Avg Accuracy (%)")
         plt.title("AI Agent Accuracy Comparison")
