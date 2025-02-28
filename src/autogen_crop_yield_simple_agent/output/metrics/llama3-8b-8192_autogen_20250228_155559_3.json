@@ -1,0 +1,55 @@
+{
+  "model_name": "llama3-8b-8192",
+  "model_temperature": 0.01,
+  "model_max_tokens": 1000,
+  "random_few_shot": false,
+  "num_few_shot": 5,
+  "iterations": [
+    {
+      "iteration": 1,
+      "runtime": 150.56877899169922,
+      "memory_delta": 4.296875,
+      "peak_memory": 265.25,
+      "llm_calls": 25,
+      "avg_latency": 0.18638772010803223,
+      "total_prompt_tokens": 14159,
+      "tokens_per_call": 573.12,
+      "mae": 9623.62,
+      "mape": 16.000970294196254,
+      "rmse": 37312.39654873431,
+      "group_metrics": {}
+    },
+    {
+      "iteration": 2,
+      "runtime": 179.65946412086487,
+      "memory_delta": 0.203125,
+      "peak_memory": 265.5,
+      "llm_calls": 25,
+      "avg_latency": 0.2772384262084961,
+      "total_prompt_tokens": 14159,
+      "tokens_per_call": 573.12,
+      "mae": 9656.42,
+      "mape": 16.02056255971172,
+      "rmse": 37326.00318558096,
+      "group_metrics": {}
+    },
+    {
+      "iteration": 3,
+      "runtime": 183.38572597503662,
+      "memory_delta": 0.203125,
+      "peak_memory": 265.65625,
+      "llm_calls": 23,
+      "avg_latency": 0.7168209241784137,
+      "total_prompt_tokens": 13036,
+      "tokens_per_call": 573.6086956521739,
+      "mae": 10419.673913043478,
+      "mape": 16.473088400684023,
+      "rmse": 38914.027207841245,
+      "group_metrics": {}
+    }
+  ],
+  "dataset_stats": {},
+  "timestamp": "2025-02-28 15:55:59.116231",
+  "memory_delta": 0.0,
+  "peak_memory": 0.0
+}

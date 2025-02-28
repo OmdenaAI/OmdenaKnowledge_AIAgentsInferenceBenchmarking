@@ -9,6 +9,8 @@ import random
 import pandas as pd
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 import groq
+from simple_agent_common.singleagent.prompts import YIELD_PREDICTION_PROMPT, YIELD_SYSTEM_PROMPT
+import traceback
 
 class PredictionAgent:
     def __init__(self, config: Dict[str, Any], logger: logging.Logger, 
@@ -19,7 +21,7 @@ class PredictionAgent:
         # Create AutoGen agent with proper Groq configuration
         self.assistant = autogen.AssistantAgent(
             name="yield_prediction_expert",
-            system_message="You are an agricultural yield prediction expert. Return ONLY the predicted yield as a number, no other text.",
+            system_message=YIELD_SYSTEM_PROMPT,
             llm_config=llm_config
         )
         
@@ -106,10 +108,11 @@ class PredictionAgent:
                 'retry_count': self.retry_count
             }
         except groq.RateLimitError as e:  # Use full path
-            self.logger.info(f"Groq rate limit hit: {str(e)}")
+            self.logger.info(f"Groq rate limit hit: {str(e)}", exc_info=True)
             raise
         except Exception as e:
             self.logger.error(f"Prediction failed: {str(e)}")
+            self.logger.error("Traceback:", exc_info=True)
             if self.retry_count >= self.max_retries:
                 self.logger.error("Max retries reached")
             raise
@@ -166,19 +169,21 @@ class PredictionAgent:
                 # Get most similar examples
                 selected_indices = similarity_scores.nsmallest(num_few_shot).index
                 selected_rows = crop_data.loc[selected_indices]
-                historical_phrase = f"Most similar historical records for {features['crop']} (ordered by relevance):\n"
+                historical_records_type = "Most Similar Historical Records"
+                similarity_type = "most similar"
 
             else: # Choose random rows from crop data
                 # Get random indices directly - no need for similarity scores
                 selected_indices = random.sample(range(len(crop_data)), min(num_few_shot, len(crop_data)))
                 selected_rows = crop_data.iloc[selected_indices]
-                historical_phrase = f"Random historical records for {features['crop']}:\n"
+                historical_records_type = "Random Historical Records"
+                similarity_type = "random"
             
             # Get the summary yield stats for the featured crop
             yield_stats = dataset.summary["crop_distribution"][features["crop"]]["yield_stats"]
 
                 # Format few-shot examples
-            few_shot_examples = [
+            historical_examples = [
                 f"* When precipitation={row['Precipitation (mm day-1)']:.2f}, "
                 f"specific_humidity={row['Specific Humidity at 2 Meters (g/kg)']:.2f}, "
                 f"relative_humidity={row['Relative Humidity at 2 Meters (%)']:.2f}, "
@@ -186,28 +191,21 @@ class PredictionAgent:
                 f"yield was {row['Yield']:.0f}"
                 for _, row in selected_rows.iterrows()
             ]
-
-            result = (
-                f"Predict yield for {features['crop']} based on these conditions:\n\n"
-                f"### Current Measurements:\n"
-                f"- Precipitation: {features['precipitation']} mm/day\n"
-                f"- Specific Humidity: {features['specific_humidity']} g/kg\n"
-                f"- Relative Humidity: {features['relative_humidity']}%\n"
-                f"- Temperature: {features['temperature']}°C\n\n"
-                f"### Most Similar Historical Records:\n"
-                f"{chr(10).join(few_shot_examples)}\n\n"
-                f"### Yield Statistics:\n"
-                f"Utilize the following yield stats from all {features['crop']} records for your prediction:\n"
-                f"{yield_stats}.\n"
-                f"- Your prediction must fall strictly within this range.\n"
-                f"- Use the mean ({yield_stats['mean']:.2f}) as a central reference point.\n\n"
-                f"### Instructions:\n"
-                f"Base your prediction on the most similar historical records provided, ensuring it is constrained by the yield stats range. "
-                f"Your output must be a single number representing the predicted yield, with no additional text."
-            )
             
+            result = YIELD_PREDICTION_PROMPT.format(
+                crop=features['crop'],
+                precipitation=features['precipitation'],
+                specific_humidity=features['specific_humidity'],
+                relative_humidity=features['relative_humidity'],
+                temperature=features['temperature'],
+                historical_records_type=historical_records_type,
+                historical_examples='\n'.join(historical_examples),
+                yield_stats=yield_stats,
+                mean_yield=yield_stats['mean'],
+                similarity_type=similarity_type).strip()
+       
             return result
             
         except Exception as e:
             self.logger.error(f"Failed to build prediction context: {str(e)}")
-            raise 
+            raise

@@ -4,6 +4,7 @@ from pathlib import Path
 import os
 import time
 import logging
+import argparse
 from agents import PredictionAgent, DataPreparationAgent
 from tasks import PredictionTask, DataPreparationTask, QuestionLoadingTask
 from simple_agent_common.data_classes import BenchmarkMetrics, IterationMetrics
@@ -127,8 +128,7 @@ def run_benchmark(config: dict, llm: ChatGroq, logger: logging.Logger) -> Benchm
         )
         benchmark.iterations.append(iteration_metrics)
 
-        # Help to minimize rate limiting
-        #time.sleep(20)
+        memory_manager.reset_tracking()
 
     # Save benchmark results
     metrics_dir = Path(config['data']['paths']['metrics'])
@@ -137,7 +137,11 @@ def run_benchmark(config: dict, llm: ChatGroq, logger: logging.Logger) -> Benchm
     return benchmark
 
 if __name__ == "__main__":
-    config = load_config()
+    parser = argparse.ArgumentParser(description='Run the benchmark process')
+    parser.add_argument('--config', type=str, default='config/config.yaml', help='Path to the yaml config file')
+    args = parser.parse_args()
+    
+    config = load_config(config_location=args.config)
     load_env_vars(config)
     llm = get_llm(config)
     logger = setup_logging(framework_name="crewai")

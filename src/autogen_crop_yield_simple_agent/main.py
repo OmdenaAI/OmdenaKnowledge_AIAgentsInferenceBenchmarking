@@ -5,8 +5,12 @@ from pathlib import Path
 import os
 import time
 import numpy as np
+import argparse
 from simple_agent_common.data_classes import BenchmarkMetrics, IterationMetrics, PredictionMetrics
 from simple_agent_common.utils import RateLimiter, MemoryManager, load_env_vars, load_config, setup_logging, TokenCounter
+
+# Set the environment variable to disable Docker
+os.environ['AUTOGEN_USE_DOCKER'] = 'False'
 
 def setup_agents(config: Dict[str, Any], logger: logging.Logger, config_list: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Setup and configure all agents"""
@@ -44,7 +48,8 @@ def get_groq_config(config: Dict[str, Any], logger: logging.Logger) -> List[Dict
         "api_key": groq_key,
         "base_url": "https://api.groq.com/openai/v1",
         "temperature": config['model']['temperature'],
-        "max_tokens": config['model']['max_tokens']
+        "max_tokens": config['model']['max_tokens'],
+        "cache_seed": None # Ensure cache is disabled
     }]
 
 def run_benchmark(config: Dict[str, Any], logger: logging.Logger) -> List[Dict[str, Any]]:
@@ -156,6 +161,8 @@ def run_benchmark(config: Dict[str, Any], logger: logging.Logger) -> List[Dict[s
         )        
         benchmark.iterations.append(iteration_result)
         logger.info(f"Completed iteration {iteration + 1}")
+
+        memory_manager.reset_tracking()
     
     # Save metrics for all iterations
     metrics_dir = Path(config['data']['paths']['metrics'])
@@ -164,7 +171,11 @@ def run_benchmark(config: Dict[str, Any], logger: logging.Logger) -> List[Dict[s
     return benchmark
 
 if __name__ == "__main__":
-    config = load_config()
+    parser = argparse.ArgumentParser(description='Run the benchmark process')
+    parser.add_argument('--config', type=str, default='config/config.yaml', help='Path to the yaml config file')
+    args = parser.parse_args()
+    
+    config = load_config(config_location=args.config)
     load_env_vars(config)
     logger = setup_logging(framework_name="autogen")
     

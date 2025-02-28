@@ -11,6 +11,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 from simple_agent_common.utils.token_counter import TokenCounter
 from simple_agent_common.utils.rate_limiter import RateLimitError
 import groq  # Import the module
+from simple_agent_common.singleagent.prompts import YIELD_PREDICTION_PROMPT, YIELD_SYSTEM_PROMPT
 
 class PredictionAgent(Agent):
     model_config = ConfigDict(
@@ -107,7 +108,7 @@ class PredictionAgent(Agent):
             yield_stats = dataset.summary["crop_distribution"][features["crop"]]["yield_stats"]
 
             # Prepare messages
-            system_prompt = "You are an agricultural yield prediction expert. Return ONLY the predicted yield as a number, no other text."
+            system_prompt = YIELD_SYSTEM_PROMPT
             user_prompt = self._build_prediction_context(features, crop_data, yield_stats)
             
             messages = [
@@ -170,12 +171,13 @@ class PredictionAgent(Agent):
 
     def _build_prediction_context(self, features: dict, crop_data: pd.DataFrame, yield_stats: str) -> str:
         if self.random_few_shot:
-            # Get random indices directly - no need for similarity scores
+            # Get random indices directly
             selected_indices = random.sample(range(len(crop_data)), min(self.num_few_shot, len(crop_data)))
             selected_rows = crop_data.iloc[selected_indices]
-            
+            historical_records_type = "Random Historical Records"
+            similarity_type = "random"
         else:
-            # Only calculate similarity scores if we need them
+            # Calculate similarity scores
             similarity_scores = (
                 abs(crop_data['Precipitation (mm day-1)'] - features['precipitation']) / crop_data['Precipitation (mm day-1)'] +
                 abs(crop_data['Specific Humidity at 2 Meters (g/kg)'] - features['specific_humidity']) / crop_data['Specific Humidity at 2 Meters (g/kg)'] +
@@ -184,8 +186,10 @@ class PredictionAgent(Agent):
             )
             selected_indices = similarity_scores.nsmallest(self.num_few_shot).index
             selected_rows = crop_data.loc[selected_indices]
+            historical_records_type = "Most Similar Historical Records"
+            similarity_type = "most similar"
             
-        few_shot_examples = [
+        historical_examples = [
             f"* When precipitation={row['Precipitation (mm day-1)']:.2f}, "
             f"specific_humidity={row['Specific Humidity at 2 Meters (g/kg)']:.2f}, "
             f"relative_humidity={row['Relative Humidity at 2 Meters (%)']:.2f}, "
@@ -194,23 +198,15 @@ class PredictionAgent(Agent):
             for _, row in selected_rows.iterrows()
         ]
 
-        result = (
-            f"Predict yield for {features['crop']} based on these conditions:\n\n"
-            f"### Current Measurements:\n"
-            f"- Precipitation: {features['precipitation']} mm/day\n"
-            f"- Specific Humidity: {features['specific_humidity']} g/kg\n"
-            f"- Relative Humidity: {features['relative_humidity']}%\n"
-            f"- Temperature: {features['temperature']}°C\n\n"
-            f"### Most Similar Historical Records:\n"
-            f"{chr(10).join(few_shot_examples)}\n\n"
-            f"### Yield Statistics:\n"
-            f"Utilize the following yield stats from all {features['crop']} records for your prediction:\n"
-            f"{yield_stats}.\n"
-            f"- Your prediction must fall strictly within this range.\n"
-            f"- Use the mean ({yield_stats['mean']:.2f}) as a central reference point.\n\n"
-            f"### Instructions:\n"
-            f"Base your prediction on the most similar historical records provided, ensuring it is constrained by the yield stats range. "
-            f"Your output must be a single number representing the predicted yield, with no additional text."
+        return YIELD_PREDICTION_PROMPT.format(
+            crop=features['crop'],
+            precipitation=features['precipitation'],
+            specific_humidity=features['specific_humidity'],
+            relative_humidity=features['relative_humidity'],
+            temperature=features['temperature'],
+            historical_records_type=historical_records_type,
+            historical_examples='\n'.join(historical_examples),
+            yield_stats=yield_stats,
+            mean_yield=yield_stats['mean'],
+            similarity_type=similarity_type
         )
-
-        return result

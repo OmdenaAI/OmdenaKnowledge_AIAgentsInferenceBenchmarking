@@ -4,9 +4,9 @@ from typing import Dict, Any, List
 
 def load_config(required_paths: List[str]  = ['crop_data', 'questions', 'env', 'metrics'],
                 required_model: List[str] = ['name', 'temperature', 'max_tokens'],
-                required_benchmark: List[str] = ['iterations', 'random_few_shot', 'num_few_shot']) -> Dict[str, Any]:
+                required_benchmark: List[str] = ['iterations', 'random_few_shot', 'num_few_shot'], config_location: str = 'config/config.yaml') -> Dict[str, Any]:
     """Load configuration from YAML file"""
-    config_path = Path('config/config.yaml')
+    config_path = Path(config_location)
     if not config_path.is_file():
         raise FileNotFoundError(f"Config file not found at: {config_path}")
     
