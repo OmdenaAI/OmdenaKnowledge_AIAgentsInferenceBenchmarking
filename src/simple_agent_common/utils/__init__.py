@@ -5,6 +5,7 @@ from .memory import MemoryManager
 from .logging import setup_logging
 from .token_counter import TokenCounter
 from .dataset import Dataset
+from .extract_number import extract_number
 
 __all__ = [
     'RateLimiter',
@@ -15,5 +16,6 @@ __all__ = [
     'MemoryManager',
     'setup_logging',
     'TokenCounter',
-    'Dataset'
+    'Dataset',
+    'extract_number'
 ] 

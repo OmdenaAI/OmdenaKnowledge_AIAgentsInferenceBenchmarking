@@ -1,4 +1,4 @@
-name: multi-agent-system
+name: langgraph-multi-agent
 channels:
   - conda-forge
   - defaults
@@ -10,9 +10,9 @@ dependencies:
   - matplotlib=3.8.3
   - seaborn=0.13.2
   - pip:
-      - langgraph>=0.2.49  # ✅ Fixed to support langchain-core>=0.2.9
+      - langgraph>=0.2.49  # Fixed to support langchain-core>=0.2.9
       - langchain>=0.2.2  # Stable version
-      - langchain-core>=0.2.9  # ✅ Removed <0.3.0 constraint to resolve conflicts
+      - langchain-core>=0.2.9  # Removed <0.3.0 constraint to resolve conflicts
       - langchain-community>=0.2.2  # Matches langchain version
       - langchain-text-splitters>=0.2.0  # Ensures compatibility
       - langchain-groq>=0.2.4

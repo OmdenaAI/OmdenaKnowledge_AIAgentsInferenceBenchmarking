@@ -8,7 +8,7 @@ import os
 import time
 from simple_agent_common.utils import RateLimiter, TokenCounter
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-import re
+from simple_agent_common.utils import extract_number
 
 class BaseAgent(ABC):
     def __init__(self, name: str, system_prompt: str, logger: logging.Logger, config: Dict[str, Any]):
@@ -35,42 +35,6 @@ class BaseAgent(ABC):
             temperature=self.config["model"]["temperature"],
             max_tokens=self.config["model"]["max_tokens"]
         )
-
-    def _extract_number(self, question: str, response: str) -> float:
-        """
-        Extract numerical value from response with proper error handling
-        
-        Args:
-            question: Original question for logging context
-            response: Response from LLM to parse
-            
-        Returns:
-            float: Extracted number or penalty value (1e6) if parsing fails
-        """
-        PENALTY_VALUE = 1e6
-        value = PENALTY_VALUE
-        response = response.strip()
-        
-        try:
-            # First try: direct conversion after removing commas
-            value = float(response.replace(',', ''))
-            
-        except (ValueError, IndexError, StopIteration):
-            self.logger.info(f"Could not extract number for question: {question} from response: {response}")
-            
-            try:
-                # Second try: find any numbers in the string
-                numbers = re.findall(r'[-+]?\d*[,.]?\d+', response.replace(',', ''))
-                if numbers:
-                    value = float(numbers[-1])
-                    self.logger.info(f"Extracted number with fallback for question: {question} from response: {response}")
-                else:
-                    self.logger.warning(f"No numbers found in response: {response}")
-                    
-            except Exception as e:
-                self.logger.error(f"Could not extract number with fallback from response: '{response}' for question: '{question}'. Error: {str(e)}")
-        
-        return value
 
     def _get_retry_decorator(self):
         """Create retry decorator with config values"""
@@ -110,7 +74,7 @@ class BaseAgent(ABC):
             # Count response tokens
             response_tokens = self.token_counter.count_tokens(response.content)
             total_tokens = prompt_tokens + response_tokens
-            predicted_value = self._extract_number(prompt, response.content)
+            predicted_value = extract_number(response.content, self.logger)
             
             return {
                 'agent': self.name,

@@ -57,5 +57,7 @@ class MultiAgentOrchestrator(OrchestratorBase):
             "api_key": groq_key,
             "base_url": "https://api.groq.com/openai/v1",
             "temperature": config['model']['temperature'],
-            "max_tokens": config['model']['max_tokens']
+            "max_tokens": config['model']['max_tokens'],
+            "cache_seed": None  # Disables caching
+
         }]

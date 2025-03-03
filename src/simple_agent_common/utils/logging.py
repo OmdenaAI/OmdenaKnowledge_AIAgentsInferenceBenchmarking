@@ -27,5 +27,7 @@ def setup_logging(framework_name: str, log_dir: Optional[Path] = None) -> loggin
         file_handler = logging.FileHandler(log_file)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
+
+    logger.propagate = False
     
     return logger 

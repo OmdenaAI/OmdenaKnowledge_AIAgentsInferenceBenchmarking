@@ -7,6 +7,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+from decimal import Decimal
 
 if TYPE_CHECKING:
     from .crop_dataset import CropDataset  # Import for type checking
@@ -50,22 +51,68 @@ class PredictionMetrics(BaseMetrics):
     rmse: float = Field(default=0.0, description="Root Mean Square Error")
     group_metrics: Dict[str, Dict[str, float]] = Field(default_factory=dict, description="Metrics grouped by group label")
 
-    def _calculate_metric_set(self, predicted: np.ndarray, actual: np.ndarray) -> Dict[str, float]:
-        """Calculate a set of metrics for the given predictions and actual values"""
+    def _calculate_metric_set(self, predicted: List[float], actual: List[float]) -> Dict[str, float]:
+        """Calculate error metrics between predicted and actual values using Decimal for precision.
+        
+        Args:
+            predicted: list of predicted values
+            actual: list of actual values
+            
+        Returns:
+            Dictionary containing MAE, MAPE, and RMSE as floats, capped at float max if needed
+        """
+        # Convert to Decimal for precise calculation
+        pred_dec = [Decimal(str(p)) for p in predicted]
+        act_dec = [Decimal(str(a)) for a in actual]
+        
+        # Calculate absolute errors
+        abs_errors = [abs(p - a) for p, a in zip(pred_dec, act_dec)]
+        
+        # Calculate percentage errors with protection against division by zero
+        # and cap at 100% for extreme cases
+        perc_errors = []
+        for p, a in zip(pred_dec, act_dec):
+            if abs(a) < Decimal('0.0001'):  # Protect against near-zero values
+                if abs(p - a) < Decimal('0.0001'):  # If prediction is also near zero
+                    perc_errors.append(Decimal('0.0'))  # Consider it correct
+                else:
+                    perc_errors.append(Decimal('100.0'))  # Cap at 100% error
+            else:
+                error = abs((p - a) / a * Decimal('100.0'))
+                perc_errors.append(min(error, Decimal('100.0')))  # Cap at 100%
+        
+        # Calculate squared errors
+        squared_errors = [(p - a) ** 2 for p, a in zip(pred_dec, act_dec)]
+        
+        # Calculate means using Decimal
+        mae = sum(abs_errors) / Decimal(str(len(abs_errors))) if abs_errors else Decimal('0.0')
+        mape = sum(perc_errors) / Decimal(str(len(perc_errors))) if perc_errors else Decimal('0.0')
+        mse = sum(squared_errors) / Decimal(str(len(squared_errors))) if squared_errors else Decimal('0.0')
+        rmse = mse.sqrt()
+        
+        # Cap at float max if needed
+        float_max = Decimal(str(np.finfo(np.float64).max))
+        
         return {
-            'mae': np.mean(np.abs(predicted - actual)),
-            'mape': np.mean(np.abs((predicted - actual) / actual)) * 100,
-            'rmse': np.sqrt(np.mean((predicted - actual) ** 2))
+            'mae': float(min(mae, float_max)),
+            'mape': float(min(mape, float_max)),
+            'rmse': float(min(rmse, float_max))
         }
 
     def calculate_metrics(self) -> None:
-        """Calculate all prediction metrics, both overall and grouped by the third parameter if present"""
+        """Calculate metrics from stored predictions.
+        
+        Processes self.predictions list of (predicted, actual, group) tuples:
+        1. Calculates overall metrics across all predictions
+        2. Groups predictions by their group label
+        3. Calculates separate metrics for each group
+        """
         if not self.predictions:
             return
 
-        # Calculate overall metrics
-        predicted = np.array([p[0] for p in self.predictions])
-        actual = np.array([p[1] for p in self.predictions])
+        # Extract predicted and actual values as lists
+        predicted = [p[0] for p in self.predictions]  # predicted values
+        actual = [p[1] for p in self.predictions]    # actual values
         
         # Calculate overall metrics
         metrics = self._calculate_metric_set(predicted, actual)
@@ -73,7 +120,7 @@ class PredictionMetrics(BaseMetrics):
         self.mape = metrics['mape']
         self.rmse = metrics['rmse']
 
-        # Group predictions
+        # Group predictions by their group label
         groups: Dict[str, List[Tuple[float, float]]] = {}
         for pred, act, group in self.predictions:
             if group not in groups:
@@ -83,8 +130,8 @@ class PredictionMetrics(BaseMetrics):
         # Calculate metrics for each group
         self.group_metrics = {}
         for group, group_predictions in groups.items():
-            group_predicted = np.array([p[0] for p in group_predictions])
-            group_actual = np.array([p[1] for p in group_predictions])
+            group_predicted = [p[0] for p in group_predictions]
+            group_actual = [p[1] for p in group_predictions]
             self.group_metrics[group] = self._calculate_metric_set(group_predicted, group_actual)
 
 class IterationMetrics(BaseModel):
@@ -117,6 +164,7 @@ class BenchmarkMetrics(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.now)
     memory_delta: float = Field(default=0.0, description="Total memory delta across entire benchmark in MB")
     peak_memory: float = Field(default=0.0, description="Peak memory usage across entire benchmark in MB")
+    benchmark_score: float = Field(default=0.0, description="Benchmark score across entire benchmark")
     
     def __init__(self, config: Dict[str, Any]):
         super().__init__(
@@ -151,25 +199,29 @@ class BenchmarkMetrics(BaseModel):
         print(f"- Average Tokens/Call: {self.avg_token_count:.1f}")
         print(f"- Total Tokens: {self.total_token_count}")
         print(f"- Average MAE: {self.avg_mae:.2e}")
-        print(f"- Average MAPE: {self.avg_mape:.2e}%")
+        print(f"- Average MAPE: {self.avg_mape:.2f}%")
         print(f"- Average RMSE: {self.avg_rmse:.2e}")
+        print(f"- Benchmark Score: {self.benchmark_score:.1f}%")
 
     def set_dataset_stats(self, dataset: 'CropDataset') -> None:
         """Store dataset statistics"""
         self.dataset_stats = dataset.summary['crop_distribution']
 
     def save_metrics(self, metrics_dir: Path, framework: str) -> None:
-
-        # Print a summary of the metrics
-        self._print_benchmark_summary()
-
         """Save metrics and create visualizations"""
         metrics_dir.mkdir(exist_ok=True)
+        
+        # Calculate benchmark scores
+        scores = self.calculate_benchmark_score()['benchmark_score']
+        self.benchmark_score = scores['total_score']
         
         # Save JSON metrics
         filename = f"{self.model_name}_{framework}_{self.timestamp.strftime('%Y%m%d_%H%M%S')}_{len(self.iterations)}.json"
         with open(metrics_dir / filename, 'w') as f:
             json.dump(self.model_dump(), f, indent=2, default=str)
+
+        # Print a summary of the metrics
+        self._print_benchmark_summary()
             
         # Create and save performance plots
         self.plot_performance(metrics_dir, framework)
@@ -324,7 +376,10 @@ class BenchmarkMetrics(BaseModel):
 
     @property
     def avg_mape(self) -> float:
-        return np.mean([m.mape for m in self.iterations]) if self.iterations else 0.0
+        """Calculate average MAPE across iterations"""
+        if not self.iterations:
+            return 0.0
+        return np.mean([m.mape for m in self.iterations])
 
     @property
     def avg_rmse(self) -> float:
@@ -409,4 +464,88 @@ class BenchmarkMetrics(BaseModel):
         # Save the plot
         plot_filename = f"{self.model_name}_{framework}_{self.timestamp.strftime('%Y%m%d_%H%M%S')}_{len(self.iterations)}_agent_performance.png"
         plt.savefig(metrics_dir / plot_filename, dpi=300, bbox_inches='tight')
-        plt.close() 
+        plt.close()
+
+    def calculate_benchmark_score(self, config=None):
+        """Calculate overall benchmark score across all iterations.
+        
+        Returns normalized percentage scores (0-100%) for each component and a weighted total score.
+        The total score is a weighted average of component percentages, representing the overall 
+        achievement relative to optimal performance.
+        """
+        if config is None:
+            config = {
+                'quality': {
+                    'weight': 60,
+                    'mape_threshold': 15,  # MAPE threshold for penalty
+                    'mape_penalty': 0.5    # Penalty factor for exceeding threshold
+                },
+                'speed': {
+                    'weight': 20,
+                    'runtime_threshold': 300,
+                    'latency_threshold': 2,
+                    'weights': {'runtime': 0.6, 'latency': 0.4}
+                },
+                'resource': {
+                    'weight': 20,
+                    'memory_delta_threshold': 500,
+                    'peak_memory_threshold': 1000,
+                    'token_threshold': 1000,
+                    'weights': {'memory_delta': 0.4, 'peak_memory': 0.3, 'tokens': 0.3}
+                }
+            }
+
+        # Quality Score (0-100%)
+        quality_base = 1 - min(self.avg_mape / 100, 1)  # Normalize MAPE to 0-1 range
+        mape_ratio = self.avg_mape / config['quality']['mape_threshold']
+        quality_penalty = np.exp(-max(0, mape_ratio - 1) * config['quality']['mape_penalty'])
+        quality_percentage = quality_base * quality_penalty * 100
+
+        # Speed Score (0-100%)
+        runtime_variance = np.var([m.runtime for m in self.iterations])
+        latency_variance = np.var([m.avg_latency for m in self.iterations])
+        speed_percentage = 100 * (
+            (1 - min(self.avg_runtime / config['speed']['runtime_threshold'], 1)) * config['speed']['weights']['runtime'] +
+            (1 - min(self.avg_latency / config['speed']['latency_threshold'], 1)) * config['speed']['weights']['latency']
+        )
+
+        # Resource Score (0-100%)
+        resource_percentage = 100 * (
+            (1 - np.power(self.memory_delta / config['resource']['memory_delta_threshold'], 1.5)) * config['resource']['weights']['memory_delta'] +
+            (1 - np.power(self.peak_memory / config['resource']['peak_memory_threshold'], 1.5)) * config['resource']['weights']['peak_memory'] +
+            (1 - np.power(self.iterations[0].tokens_per_call / config['resource']['token_threshold'], 1.5)) * config['resource']['weights']['tokens']
+        )
+
+        # Calculate weighted total score (0-100%)
+        total_score = (
+            quality_percentage * config['quality']['weight'] +
+            speed_percentage * config['speed']['weight'] +
+            resource_percentage * config['resource']['weight']
+        ) / sum(config[k]['weight'] for k in ['quality', 'speed', 'resource'])
+
+        self.benchmark_score = round(total_score, 2)
+
+        return {
+            'benchmark_score': {
+                'total_score': self.benchmark_score,  # Overall weighted percentage (0-100%)
+                'quality_percentage': round(quality_percentage, 2),
+                'speed_percentage': round(speed_percentage, 2),
+                'resource_percentage': round(resource_percentage, 2),
+                'details': {
+                    'quality_weight': config['quality']['weight'],
+                    'speed_weight': config['speed']['weight'],
+                    'resource_weight': config['resource']['weight'],
+                    'quality_penalty': round(quality_penalty, 3),
+                    'mape_ratio': round(mape_ratio, 3),
+                    'runtime_variance': round(runtime_variance, 3),
+                    'latency_variance': round(latency_variance, 3)
+                }
+            }
+        }
+
+    def model_dump(self):
+        """Serialize the metrics to a dictionary"""
+        data = super().model_dump()
+        # Add benchmark score to the output
+        data['benchmark_score'] = self.calculate_benchmark_score()['benchmark_score']
+        return data 

@@ -42,5 +42,5 @@ logs/
 
 # OS specific
 .DS_Store/
-Thumbs.
+Thumbs.db
 .cache/

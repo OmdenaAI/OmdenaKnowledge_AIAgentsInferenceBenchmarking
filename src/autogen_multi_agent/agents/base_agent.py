@@ -2,11 +2,10 @@ from typing import Dict, Any, List, Optional
 import autogen
 from simple_agent_common.utils import RateLimiter, TokenCounter
 import time
-import re
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-import os
+import groq
 import logging
-from openai import RateLimitError, OpenAI
+from simple_agent_common.utils import extract_number
 
 class BaseAgent():
     def __init__(self, name: str, system_prompt: str, logger: logging.Logger, llm_config: List[Dict[str, Any]], 
@@ -29,7 +28,9 @@ class BaseAgent():
             'total_tokens': 0,
             'total_latency': 0
         }
-        
+        self.retry_count = 0
+        self.max_retries = 3
+
         # Create AutoGen assistant with proper configuration
         self.assistant = autogen.AssistantAgent(
             name=name,
@@ -44,42 +45,6 @@ class BaseAgent():
             max_consecutive_auto_reply=0,
             code_execution_config=False  # Disable code execution
         )
-        
-    def _extract_number(self, question: str, response: str) -> float:
-        """
-        Extract numerical value from response with proper error handling
-        
-        Args:
-            question: Original question for logging context
-            response: Response from LLM to parse
-            
-        Returns:
-            float: Extracted number or penalty value (1e6) if parsing fails
-        """
-        PENALTY_VALUE = 1e6
-        value = PENALTY_VALUE
-        response = response.strip()
-        
-        try:
-            # First try: direct conversion after removing commas
-            value = float(response.replace(',', ''))
-            
-        except (ValueError, IndexError, StopIteration):
-            self.logger.info(f"Could not extract number for question: {question} from response: {response}")
-            
-            try:
-                # Second try: find any numbers in the string
-                numbers = re.findall(r'[-+]?\d*[,.]?\d+', response.replace(',', ''))
-                if numbers:
-                    value = float(numbers[-1])
-                    self.logger.info(f"Extracted number with fallback for question: {question} from response: {response}")
-                else:
-                    self.logger.warning(f"No numbers found in response: {response}")
-                    
-            except Exception as e:
-                self.logger.error(f"Could not extract number with fallback from response: '{response}' for question: '{question}'. Error: {str(e)}")
-        
-        return value
 
     def _get_retry_decorator(self):
         """Create retry decorator with config values"""
@@ -90,7 +55,7 @@ class BaseAgent():
                 min=self.config['model']['wait_min'],
                 max=self.config['model']['wait_max']
             ),
-            retry=retry_if_exception_type(RateLimitError)
+            retry=retry_if_exception_type(groq.RateLimitError)
         )
 
     def execute(self, prompt: str) -> Dict[str, Any]:
@@ -119,7 +84,7 @@ class BaseAgent():
                 raise ValueError("No response received")
             
             # Extract numerical answer
-            predicted_value = self._extract_number(prompt, response)
+            predicted_value = extract_number(response, self.logger)
             
             # Update metrics
             end_time = time.time()
@@ -139,7 +104,7 @@ class BaseAgent():
                 'prompt_tokens': prompt_tokens,
                 'response_tokens': response_tokens,
                 'total_tokens': total_tokens,
-                'retry_count': 0
+                'retry_count': self.retry_count
             }
         except Exception as e:
             self.logger.error(f"Prediction failed: {str(e)}")

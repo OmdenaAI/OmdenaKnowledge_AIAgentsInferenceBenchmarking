@@ -10,8 +10,8 @@ dependencies:
   - matplotlib=3.8.3
   - seaborn=0.13.2
   - pip:
-      - pyautogen>=0.2.0
-      - groq>=0.4.2
+      - pyautogen==0.2.2
+      - groq
       - transformers==4.38.2
       - psutil>=5.9.7
       - python-dotenv>=1.0.0

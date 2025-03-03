@@ -2,7 +2,7 @@ from typing import Dict, Any
 import logging
 from pathlib import Path
 from ..data_classes import BenchmarkMetrics, IterationMetrics, PredictionMetrics
-from ..utils import MemoryManager, RateLimiter, Dataset
+from ..utils import MemoryManager, RateLimiter, Dataset, extract_number
 from .orchestrator_base import OrchestratorBase
 import time
 import numpy as np
@@ -51,12 +51,17 @@ class BenchmarkRunner:
                     total_tokens += result['total_tokens']
                     
                     agent = result['agent']
-                    prediction_metrics.predictions.append((result['predicted_yield'], question['answer'], agent))
+                    predicted = result['predicted_yield']  # Already a Decimal
+                    actual = question['answer'] # Direct conversion
+                                       
+                    prediction_metrics.predictions.append((predicted, actual, agent))
                     latencies.append(result['latency'])
 
                     # Track peak memory during processing
                     current_stats = memory_manager.get_memory_stats()
                     peak_memory = max(peak_memory, current_stats['current'])
+
+                    self.logger.info(f"\tPrediction: {predicted}, Actual: {actual}")
                 
                 except Exception as e:
                     self.logger.error(f"Prediction failed: {str(e)}")
