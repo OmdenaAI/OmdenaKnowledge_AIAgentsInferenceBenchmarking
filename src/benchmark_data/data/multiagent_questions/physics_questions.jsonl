@@ -1,0 +1,25 @@
+{"question": "What is the acceleration due to gravity on Earth in m/s²?", "answer": 9.81}
+{"question": "What is the speed of sound in air at room temperature in m/s?", "answer": 343.0}
+{"question": "How many seconds are in one hour?", "answer": 3600.0}
+{"question": "What is the density of water in kg/m³?", "answer": 1000.0}
+{"question": "What is the charge of an electron in coulombs?", "answer": -1.602e-19}
+{"question": "What is the boiling point of water in Kelvin?", "answer": 373.15}
+{"question": "What is the value of Planck’s constant in J·s?", "answer": 6.62607015e-34}
+{"question": "What is the standard atmospheric pressure in kPa?", "answer": 101.325}
+{"question": "What is the mechanical advantage of a simple pulley system with two pulleys?", "answer": 2.0}
+{"question": "What is the escape velocity from Earth in km/s?", "answer": 11.186}
+{"question": "What is the energy of a photon with a frequency of 5 x 10^14 Hz using E = hf (h = 6.626 x 10^-34 J·s)?", "answer": 3.313e-19}
+{"question": "What is the efficiency percentage of an ideal Carnot engine operating between 500K and 300K?", "answer": 40.0}
+{"question": "What is the refractive index of water?", "answer": 1.33}
+{"question": "What is the momentum of a 2 kg object moving at 3 m/s?", "answer": 6.0}
+{"question": "What is the force needed to accelerate a 10 kg object at 5 m/s²?", "answer": 50.0}
+{"question": "What is the kinetic energy of a 4 kg mass moving at 3 m/s?", "answer": 18.0}
+{"question": "What is the resistance of a 10V circuit with 2A current?", "answer": 5.0}
+{"question": "What is the capacitance of a capacitor storing 0.002 C of charge at 10V?", "answer": 0.0002}
+{"question": "What is the work done in moving a charge of 3C across a potential difference of 12V?", "answer": 36.0}
+{"question": "What is the impulse when a force of 10N is applied for 5 seconds?", "answer": 50.0}
+{"question": "What is the time period of a pendulum with a length of 1m on Earth?", "answer": 2.01}
+{"question": "What is the angular velocity of a wheel rotating at 120 RPM?", "answer": 12.57}
+{"question": "What is the coefficient of friction for a surface where a 10N force is required to move a 20N object?", "answer": 0.5}
+{"question": "What is the acceleration due to gravity on Earth in m/s\u00b2?", "answer": 9.81}
+{"question": "What is the speed of light in vacuum in m/s?", "answer": 299792458}

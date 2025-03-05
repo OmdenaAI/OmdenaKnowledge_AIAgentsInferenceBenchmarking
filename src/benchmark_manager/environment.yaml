@@ -1,0 +1,31 @@
+# Environment for benchmark manager application
+# Processes benchmark results and generates visualizations
+name: benchmark-manager
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Core Python and package management
+  - python=3.10.13
+  - pip=24.0
+
+  # Data processing and analysis
+  - numpy=1.26.4
+  - pandas=2.2.1
+  
+  # Visualization packages
+  - matplotlib=3.8.3
+  - seaborn=0.13.2
+  
+  # Configuration and file handling
+  - pyyaml=6.0.1
+  - pathlib  # For path handling
+  
+  # Development tools
+  - jupyter=1.0.0  # Optional: for notebook development/testing
+  
+  # Packages that need to be pip installed
+  - pip:
+      - python-dotenv>=1.0.0
+      - transformers>=4.36.0
+      - "-e ../simple_agent_common/."  # Local package for common utilities 

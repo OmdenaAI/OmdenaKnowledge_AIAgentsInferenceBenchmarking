@@ -154,6 +154,7 @@ class IterationMetrics(BaseModel):
 
 class BenchmarkMetrics(BaseModel):
     """Track benchmark metrics across iterations"""
+    framework: str = Field(default="", description="Framework used for the benchmark")
     model_name: str
     model_temperature: float
     model_max_tokens: int
@@ -166,8 +167,9 @@ class BenchmarkMetrics(BaseModel):
     peak_memory: float = Field(default=0.0, description="Peak memory usage across entire benchmark in MB")
     benchmark_score: float = Field(default=0.0, description="Benchmark score across entire benchmark")
     
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any], framework: str):
         super().__init__(
+            framework=framework,
             model_name=config['model']['name'],
             model_temperature=config['model']['temperature'],
             model_max_tokens=config['model']['max_tokens'],
@@ -185,6 +187,7 @@ class BenchmarkMetrics(BaseModel):
         print("\nBenchmark Summary:")
         print("=" * 50)
         print(f"Model Configuration:")
+        print(f"- Framework: {self.framework}")
         print(f"- Name: {self.model_name}")
         print(f"- Temperature: {self.model_temperature}")
         print(f"- Max Tokens: {self.model_max_tokens}")

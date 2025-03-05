@@ -12,6 +12,7 @@ from simple_agent_common.utils import MemoryManager, load_env_vars, load_config,
 from typing import Dict, Any, Optional, Callable
 from simple_agent_common.utils.token_counter import TokenCounter
 
+FRAMEWORK = "crewai"
 def get_llm(config):
     groq_key = os.getenv("GROQ_API_KEY")
     if not groq_key:
@@ -86,7 +87,7 @@ def run_crew(config: dict, llm: ChatGroq, logger: logging.Logger, memory_manager
     }
 
 def run_benchmark(config: dict, llm: ChatGroq, logger: logging.Logger) -> BenchmarkMetrics:
-    benchmark = BenchmarkMetrics(config=config)
+    benchmark = BenchmarkMetrics(framework=FRAMEWORK, config=config)
     iterations = config['benchmark']['iterations']
     
     # Initialize memory tracking
@@ -132,7 +133,7 @@ def run_benchmark(config: dict, llm: ChatGroq, logger: logging.Logger) -> Benchm
 
     # Save benchmark results
     metrics_dir = Path(config['data']['paths']['metrics'])
-    benchmark.save_metrics(metrics_dir, 'crewai')
+    benchmark.save_metrics(metrics_dir, FRAMEWORK)
     
     return benchmark
 
@@ -144,5 +145,5 @@ if __name__ == "__main__":
     config = load_config(config_location=args.config)
     load_env_vars(config)
     llm = get_llm(config)
-    logger = setup_logging(framework_name="crewai")
+    logger = setup_logging(framework_name=FRAMEWORK)
     benchmark_results = run_benchmark(config, llm, logger)

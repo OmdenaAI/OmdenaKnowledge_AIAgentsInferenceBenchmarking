@@ -88,7 +88,7 @@ class BenchmarkRunner:
 
     def run_benchmark(self, iterations: int, dataset: Dataset) -> BenchmarkMetrics:
         """Run complete benchmark with memory tracking"""
-        benchmark = BenchmarkMetrics(config=self.config)
+        benchmark = BenchmarkMetrics(framework=self.benchmark_name, config=self.config)
         memory_manager = MemoryManager()
         
         memory_manager.start_tracking()

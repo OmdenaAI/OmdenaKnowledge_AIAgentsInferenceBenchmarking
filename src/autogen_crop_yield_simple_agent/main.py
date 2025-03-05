@@ -11,6 +11,7 @@ from simple_agent_common.utils import RateLimiter, MemoryManager, load_env_vars,
 
 # Set the environment variable to disable Docker
 os.environ['AUTOGEN_USE_DOCKER'] = 'False'
+FRAMEWORK = "autogen"
 
 def setup_agents(config: Dict[str, Any], logger: logging.Logger, config_list: List[Dict[str, Any]]) -> Dict[str, Any]:
     """Setup and configure all agents"""
@@ -56,7 +57,7 @@ def run_benchmark(config: Dict[str, Any], logger: logging.Logger) -> List[Dict[s
     """Run the benchmark process with iterations"""
     logger.debug("Starting benchmark run...")
 
-    benchmark = BenchmarkMetrics(config=config)
+    benchmark = BenchmarkMetrics(framework=FRAMEWORK, config=config)
     
     # Get number of iterations from config
     num_iterations = config['benchmark'].get('iterations', 3)
@@ -166,7 +167,7 @@ def run_benchmark(config: Dict[str, Any], logger: logging.Logger) -> List[Dict[s
     
     # Save metrics for all iterations
     metrics_dir = Path(config['data']['paths']['metrics'])
-    benchmark.save_metrics(metrics_dir, 'autogen')
+    benchmark.save_metrics(metrics_dir,FRAMEWORK)
     
     return benchmark
 
@@ -177,6 +178,6 @@ if __name__ == "__main__":
     
     config = load_config(config_location=args.config)
     load_env_vars(config)
-    logger = setup_logging(framework_name="autogen")
+    logger = setup_logging(framework_name=FRAMEWORK)
     
     results = run_benchmark(config, logger)

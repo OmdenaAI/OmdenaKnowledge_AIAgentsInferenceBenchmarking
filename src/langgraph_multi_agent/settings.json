@@ -1,0 +1,16 @@
+{
+    "python.analysis.extraPaths": ["./src"],
+    "launch": {
+        "configurations": [
+            {
+                "name": "Python: Current File",
+                "type": "debugpy",
+                "request": "launch",
+                "program": "${file}",
+                "args": ["--config", "../benchmark_data/config/multiagent_questions_config.yaml"],
+                "console": "integratedTerminal",
+                "justMyCode": true
+            }
+        ]
+    }
+}

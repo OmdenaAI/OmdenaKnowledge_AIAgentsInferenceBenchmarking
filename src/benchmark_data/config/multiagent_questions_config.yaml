@@ -1,0 +1,24 @@
+data:
+  paths:
+    input_dir: "../benchmark_data/data/multiagent_questions"
+    env: "~/src/python/.env"
+    metrics: "/tmp/benchmarking/multiagent_questions"
+  
+
+benchmark:
+  iterations: 3  # Number of times to run the complete test
+  total_questions: 20
+
+model:
+    name: "llama3-70b-8192"
+    temperature: 0.01
+    max_tokens: 1000
+    # Rate limiting values
+    max_calls: 4
+    pause_time: 30
+    token_limit: 90000
+    # Retry values
+    stop_after_attempt: 3
+    wait_multiplier: 60
+    wait_min: 180
+    wait_max: 300

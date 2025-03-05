@@ -1,0 +1,16 @@
+# Benchmark configurations
+benchmarks:
+  # Each benchmark can optionally specify a date_to_process (format: YYYY-MM-DD)
+  # If date_to_process is not specified, today's date will be used
+  - name: "multiagent_questions"
+    input_dir: "/tmp/benchmarking/multiagent_questions"
+    # date_to_process: "2025-03-04"  # Optional: Process specific historical date
+
+  - name: "crop_yield"
+    input_dir: "/tmp/benchmarking/crop_yield"
+    # Example with date specified:
+    # date_to_process: "2025-03-01"
+
+# Output directory configuration
+data:
+  - output_dir: "/tmp/benchmarking/benchmark_manager"
