@@ -1,0 +1,6 @@
+langgraph
+python-dotenv
+pandas
+langchain_groq
+groq
+tiktoken
