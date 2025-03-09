@@ -1,0 +1,25 @@
+data:
+  paths:
+    crop_data: "data/crop+yield+predictiondata_crop_yield.csv"
+    questions: "../benchmark_data/data/crop_yield/crop_yield_questions_50.jsonl"
+    env: "~/src/python/.env"
+    metrics: "output/metrics"
+
+model:
+  name: "llama3-70b-8192"
+  temperature: 0.01
+  max_tokens: 1000
+  # Rate limiting values
+  max_calls: 4
+  pause_time: 30
+  token_limit: 90000
+  # Retry values
+  stop_after_attempt: 3
+  wait_multiplier: 60
+  wait_min: 180
+  wait_max: 300
+
+benchmark:
+  iterations: 3
+  random_few_shot: false
+  num_few_shot: 5

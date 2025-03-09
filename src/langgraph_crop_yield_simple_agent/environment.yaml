@@ -1,0 +1,26 @@
+name: langgraph_crop_yield
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - pyyaml
+  - numpy
+  - matplotlib=3.8.3
+  - seaborn=0.13.2
+  - pip:
+      - langgraph>=0.2.49  # Fixed to support langchain-core>=0.2.9
+      - langchain>=0.2.2  # Stable version
+      - langchain-core>=0.2.9  # Removed <0.3.0 constraint to resolve conflicts
+      - langchain-community>=0.2.2  # Matches langchain version
+      - langchain-text-splitters>=0.2.0  # Ensures compatibility
+      - langchain-groq>=0.2.4
+      - groq>=0.4.2
+      - transformers==4.38.2
+      - psutil>=5.9.7
+      - python-dotenv>=1.0.0
+      - transformers>=4.36.0
+      - typing-extensions>=4.8.0  # Ensures compatibility with modern type hints
+      - pydantic>=2.4,<3  # Ensuring compatibility with langchain dependencies
+      - "-e ../simple_agent_common"

@@ -1,0 +1,10 @@
+{"prompt": "Given precipitation of 2792.95 mm/day, specific humidity of 18.24 g/kg, relative humidity of 86.04%, and temperature of 25.95\u00b0C, predict yield for crop Rice, paddy.", "completion": "Yield is 29415"}
+{"prompt": "Given precipitation of 2938.29 mm/day, specific humidity of 18.22 g/kg, relative humidity of 85.42%, and temperature of 26.06\u00b0C, predict yield for crop Oil palm fruit.", "completion": "Yield is 185831"}
+{"prompt": "Given precipitation of 2344.72 mm/day, specific humidity of 17.61 g/kg, relative humidity of 84.12%, and temperature of 25.76\u00b0C, predict yield for crop Rice, paddy.", "completion": "Yield is 26648"}
+{"prompt": "Given precipitation of 2333.46 mm/day, specific humidity of 18.5 g/kg, relative humidity of 84.85%, and temperature of 26.43\u00b0C, predict yield for crop Oil palm fruit.", "completion": "Yield is 189657"}
+{"prompt": "Given precipitation of 2967.41 mm/day, specific humidity of 18.67 g/kg, relative humidity of 85.48%, and temperature of 26.46\u00b0C, predict yield for crop Rice, paddy.", "completion": "Yield is 37496"}
+{"prompt": "Given precipitation of 2546.33 mm/day, specific humidity of 18.43 g/kg, relative humidity of 84.23%, and temperature of 26.49\u00b0C, predict yield for crop Cocoa, beans.", "completion": "Yield is 7795"}
+{"prompt": "Given precipitation of 1999.53 mm/day, specific humidity of 18.2 g/kg, relative humidity of 84.36%, and temperature of 26.27\u00b0C, predict yield for crop Rice, paddy.", "completion": "Yield is 30676"}
+{"prompt": "Given precipitation of 2414.79 mm/day, specific humidity of 18.18 g/kg, relative humidity of 85.76%, and temperature of 25.93\u00b0C, predict yield for crop Rubber, natural.", "completion": "Yield is 6562"}
+{"prompt": "Given precipitation of 2414.79 mm/day, specific humidity of 18.18 g/kg, relative humidity of 85.76%, and temperature of 25.93\u00b0C, predict yield for crop Rice, paddy.", "completion": "Yield is 32510"}
+{"prompt": "Given precipitation of 2692.34 mm/day, specific humidity of 18.37 g/kg, relative humidity of 85.54%, and temperature of 26.18\u00b0C, predict yield for crop Rubber, natural.", "completion": "Yield is 7435"}
