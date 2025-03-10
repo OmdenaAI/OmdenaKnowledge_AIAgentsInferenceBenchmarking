@@ -81,14 +81,15 @@ typeset -A CROP_ENVS
 
 # Initialize the associative arrays
 MULTIAGENT_ENVS=(
-#    [langgraph_multi_agent]="langgraph-multi-agent"
-#    [crewai_multi_agent]="crewai-multi-agent"
-#    [autogen_multi_agent]="autogen-multi-agent"
+    # [langgraph_multi_agent]="langgraph-multi-agent"
+    # [crewai_multi_agent]="crewai-multi-agent"
+    # [autogen_multi_agent]="autogen-multi-agent"
 )
 
 CROP_ENVS=(
     [crewai_crop_yield_simple_agent]="crewai_crop_yield"
     [autogen_crop_yield_simple_agent]="autogen_crop_yield"
+    [langgraph_crop_yield_simple_agent]="langgraph_crop_yield"
 )
 
 # Run multiagent agents loop

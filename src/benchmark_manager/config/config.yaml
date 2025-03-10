@@ -13,4 +13,4 @@ benchmarks:
 
 # Output directory configuration
 data:
-  - output_dir: "/tmp/benchmarking/benchmark_manager"
+  - output_dir: "/tmp/benchmarking/benchmark_manager2"

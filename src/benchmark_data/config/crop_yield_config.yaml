@@ -1,7 +1,7 @@
 data:
   paths:
     crop_data: "../benchmark_data/data/crop_yield/crop+yield+predictiondata_crop_yield.csv"
-    questions: "../benchmark_data/data/crop_yield/crop_yield_questions_25.jsonl"
+    questions: "../benchmark_data/data/crop_yield/crop_yield_questions_50.jsonl"
     env: "~/src/python/.env"
     metrics: "/tmp/benchmarking/crop_yield"
 

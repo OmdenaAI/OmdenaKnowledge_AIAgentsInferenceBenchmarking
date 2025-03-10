@@ -7,7 +7,7 @@ data:
 
 benchmark:
   iterations: 3  # Number of times to run the complete test
-  total_questions: 20
+  total_questions: 60
 
 model:
     name: "llama3-70b-8192"

@@ -1,0 +1,60 @@
+{"question": "What is 8 factorial (8!)?", "answer": 40320, "source_file": "math_questions.jsonl"}
+{"question": "What is the refractive index of water?", "answer": 1.33, "source_file": "physics_questions.jsonl"}
+{"question": "What is the charge of an electron in coulombs?", "answer": -1.602e-19, "source_file": "physics_questions.jsonl"}
+{"question": "How many nucleotide bases are in DNA?", "answer": 4, "source_file": "biology_questions.jsonl"}
+{"question": "What is the impulse when a force of 10N is applied for 5 seconds?", "answer": 50.0, "source_file": "physics_questions.jsonl"}
+{"question": "What is the square root of 144?", "answer": 12, "source_file": "math_questions.jsonl"}
+{"question": "How many seconds are in one hour?", "answer": 3600.0, "source_file": "physics_questions.jsonl"}
+{"question": "What is the enthalpy of formation of water (H2O) in kJ/mol?", "answer": -285.8, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the cube root of 27?", "answer": 3, "source_file": "math_questions.jsonl"}
+{"question": "What is the sum of the exterior angles of any polygon in degrees?", "answer": 360, "source_file": "math_questions.jsonl"}
+{"question": "How many neutrons are in an isotope of carbon-14?", "answer": 8.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the force needed to accelerate a 10 kg object at 5 m/s\u00b2?", "answer": 50.0, "source_file": "physics_questions.jsonl"}
+{"question": "What is the atomic number of calcium?", "answer": 20.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the normal boiling point of water in degrees Celsius?", "answer": 100.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the decimal equivalent of 3/8?", "answer": 0.375, "source_file": "math_questions.jsonl"}
+{"question": "What is the remainder when 29 is divided by 5?", "answer": 4, "source_file": "math_questions.jsonl"}
+{"question": "What is the coefficient of friction for a surface where a 10N force is required to move a 20N object?", "answer": 0.5, "source_file": "physics_questions.jsonl"}
+{"question": "What is the work done in moving a charge of 3C across a potential difference of 12V?", "answer": 36.0, "source_file": "physics_questions.jsonl"}
+{"question": "What is the pH of a neutral solution at 25\u00b0C?", "answer": 7.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "How many teeth does an adult human have?", "answer": 32, "source_file": "biology_questions.jsonl"}
+{"question": "What is the sum of the interior angles of a triangle in degrees?", "answer": 180, "source_file": "math_questions.jsonl"}
+{"question": "What is the energy of a photon with a frequency of 5 x 10^14 Hz using E = hf (h = 6.626 x 10^-34 J\u00b7s)?", "answer": 3.313e-19, "source_file": "physics_questions.jsonl"}
+{"question": "What is the surface area of a sphere with radius 3?", "answer": 113.097, "source_file": "math_questions.jsonl"}
+{"question": "What is the atomic number of oxygen?", "answer": 8.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the density of water in g/mL at room temperature?", "answer": 1.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "How many bones are in the human hand, including the wrist?", "answer": 27, "source_file": "biology_questions.jsonl"}
+{"question": "What is the boiling point of water in Kelvin?", "answer": 373.15, "source_file": "physics_questions.jsonl"}
+{"question": "How many oxygen molecules are carried by one hemoglobin molecule?", "answer": 4, "source_file": "biology_questions.jsonl"}
+{"question": "What is the freezing point of ethanol in degrees Celsius?", "answer": -114.1, "source_file": "chemistry_questions.jsonl"}
+{"question": "How many stomachs does a cow have?", "answer": 4, "source_file": "biology_questions.jsonl"}
+{"question": "What is the acceleration due to gravity on Earth in m/s\u00b2?", "answer": 9.81, "source_file": "physics_questions.jsonl"}
+{"question": "How many valence electrons does nitrogen have?", "answer": 5.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the atomic mass of hydrogen in g/mol?", "answer": 1.008, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the perimeter of a square with side length 5?", "answer": 20, "source_file": "math_questions.jsonl"}
+{"question": "What is the typical number of segments in an earthworm?", "answer": 100, "source_file": "biology_questions.jsonl"}
+{"question": "How many electrons does a chlorine ion (Cl-) have?", "answer": 18.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "How many neurons are in the human brain, approximately, in billions?", "answer": 86, "source_file": "biology_questions.jsonl"}
+{"question": "How many protons does a sodium (Na) atom have?", "answer": 11.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the logarithm base 10 of 1000?", "answer": 3, "source_file": "math_questions.jsonl"}
+{"question": "What is the determinant of the matrix [[1,2],[3,4]]?", "answer": -2, "source_file": "math_questions.jsonl"}
+{"question": "What is the acceleration due to gravity on Earth in m/s\u00b2?", "answer": 9.81, "source_file": "physics_questions.jsonl"}
+{"question": "What is the solution to the equation 3x - 7 = 11?", "answer": 6, "source_file": "math_questions.jsonl"}
+{"question": "What is the mechanical advantage of a simple pulley system with two pulleys?", "answer": 2.0, "source_file": "physics_questions.jsonl"}
+{"question": "What is the molar mass of sodium chloride (NaCl) in g/mol?", "answer": 58.44, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the least common multiple of 12 and 15?", "answer": 60, "source_file": "math_questions.jsonl"}
+{"question": "What is the diploid chromosome number of a fruit fly (Drosophila melanogaster)?", "answer": 8, "source_file": "biology_questions.jsonl"}
+{"question": "What is the number of chambers in an amphibian heart?", "answer": 3, "source_file": "biology_questions.jsonl"}
+{"question": "What is 25% of 200?", "answer": 50, "source_file": "math_questions.jsonl"}
+{"question": "How many hydrogen atoms are in one molecule of water?", "answer": 2.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "How many vertebrae are in the human cervical spine?", "answer": 7, "source_file": "biology_questions.jsonl"}
+{"question": "What is the speed of sound in air at room temperature in m/s?", "answer": 343.0, "source_file": "physics_questions.jsonl"}
+{"question": "What is the oxidation state of oxygen in most compounds?", "answer": -2.0, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the density of water in kg/m\u00b3?", "answer": 1000.0, "source_file": "physics_questions.jsonl"}
+{"question": "What is the sum of the first 5 prime numbers?", "answer": 28, "source_file": "math_questions.jsonl"}
+{"question": "What is the resistance of a 10V circuit with 2A current?", "answer": 5.0, "source_file": "physics_questions.jsonl"}
+{"question": "What is the standard atmospheric pressure in kPa?", "answer": 101.325, "source_file": "physics_questions.jsonl"}
+{"question": "What is the angular velocity of a wheel rotating at 120 RPM?", "answer": 12.57, "source_file": "physics_questions.jsonl"}
+{"question": "What is the bond angle in a perfect tetrahedral molecule in degrees?", "answer": 109.5, "source_file": "chemistry_questions.jsonl"}
+{"question": "What is the derivative of x^2 at x = 3?", "answer": 6, "source_file": "math_questions.jsonl"}
+{"question": "What is the time period of a pendulum with a length of 1m on Earth?", "answer": 2.01, "source_file": "physics_questions.jsonl"}

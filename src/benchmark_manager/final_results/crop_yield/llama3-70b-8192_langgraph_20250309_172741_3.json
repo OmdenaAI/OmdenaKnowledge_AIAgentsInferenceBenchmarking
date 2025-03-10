@@ -1,0 +1,71 @@
+{
+  "framework": "langgraph",
+  "model_name": "llama3-70b-8192",
+  "model_temperature": 0.01,
+  "model_max_tokens": 1000,
+  "random_few_shot": false,
+  "num_few_shot": 5,
+  "iterations": [
+    {
+      "iteration": 1,
+      "runtime": 150.8197329044342,
+      "memory_delta": 56.953125,
+      "peak_memory": 255.171875,
+      "llm_calls": 50,
+      "avg_latency": 3.0099073839187622,
+      "total_prompt_tokens": 28361,
+      "tokens_per_call": 574.02,
+      "mae": 3554.48,
+      "mape": 12.865930925244538,
+      "rmse": 6431.452762790068,
+      "group_metrics": {}
+    },
+    {
+      "iteration": 2,
+      "runtime": 209.74153184890747,
+      "memory_delta": 1.21875,
+      "peak_memory": 256.5,
+      "llm_calls": 50,
+      "avg_latency": 4.189451694488525,
+      "total_prompt_tokens": 28361,
+      "tokens_per_call": 574.02,
+      "mae": 3581.12,
+      "mape": 12.889900508771662,
+      "rmse": 6522.75336341947,
+      "group_metrics": {}
+    },
+    {
+      "iteration": 3,
+      "runtime": 209.00363421440125,
+      "memory_delta": 0.40625,
+      "peak_memory": 256.90625,
+      "llm_calls": 50,
+      "avg_latency": 4.174434556961059,
+      "total_prompt_tokens": 28361,
+      "tokens_per_call": 574.02,
+      "mae": 3554.68,
+      "mape": 12.86843030040075,
+      "rmse": 6431.466258949044,
+      "group_metrics": {}
+    }
+  ],
+  "dataset_stats": {},
+  "timestamp": "2025-03-09 17:27:41.296130",
+  "memory_delta": 0.0,
+  "peak_memory": 0.0,
+  "benchmark_score": {
+    "total_score": 74.07,
+    "quality_percentage": 87.13,
+    "speed_percentage": 22.03,
+    "resource_percentage": 86.95,
+    "details": {
+      "quality_weight": 60,
+      "speed_weight": 20,
+      "resource_weight": 20,
+      "quality_penalty": 1.0,
+      "mape_ratio": 0.858,
+      "runtime_variance": 761.965,
+      "latency_variance": 0.305
+    }
+  }
+}

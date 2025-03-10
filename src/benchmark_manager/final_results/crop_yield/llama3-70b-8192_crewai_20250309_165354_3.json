@@ -1,0 +1,108 @@
+{
+  "framework": "crewai",
+  "model_name": "llama3-70b-8192",
+  "model_temperature": 0.01,
+  "model_max_tokens": 1000,
+  "random_few_shot": false,
+  "num_few_shot": 5,
+  "iterations": [
+    {
+      "iteration": 1,
+      "runtime": 331.8645782470703,
+      "memory_delta": 101.703125,
+      "peak_memory": 416.4375,
+      "llm_calls": 50,
+      "avg_latency": 0.3694980525970459,
+      "total_prompt_tokens": 28411,
+      "tokens_per_call": 568.22,
+      "mae": 3755.62,
+      "mape": 13.181867912591418,
+      "rmse": 6702.166591483682,
+      "group_metrics": {}
+    },
+    {
+      "iteration": 2,
+      "runtime": 331.03591990470886,
+      "memory_delta": 17.5625,
+      "peak_memory": 434.0,
+      "llm_calls": 50,
+      "avg_latency": 0.3644160270690918,
+      "total_prompt_tokens": 28411,
+      "tokens_per_call": 568.22,
+      "mae": 3735.42,
+      "mape": 13.170811293946239,
+      "rmse": 6683.39352574723,
+      "group_metrics": {}
+    },
+    {
+      "iteration": 3,
+      "runtime": 330.9668290615082,
+      "memory_delta": 38.59375,
+      "peak_memory": 471.25,
+      "llm_calls": 50,
+      "avg_latency": 0.36687867641448973,
+      "total_prompt_tokens": 28411,
+      "tokens_per_call": 568.22,
+      "mae": 3755.62,
+      "mape": 13.181867912591418,
+      "rmse": 6702.166591483682,
+      "group_metrics": {}
+    }
+  ],
+  "dataset_stats": {
+    "Cocoa, beans": {
+      "count": 39,
+      "yield_stats": {
+        "min": 5765.0,
+        "max": 13056.0,
+        "mean": 8883.128205128205,
+        "std": 1745.0305860611152
+      }
+    },
+    "Oil palm fruit": {
+      "count": 39,
+      "yield_stats": {
+        "min": 142425.0,
+        "max": 203399.0,
+        "mean": 175804.6923076923,
+        "std": 14919.86975241908
+      }
+    },
+    "Rice, paddy": {
+      "count": 39,
+      "yield_stats": {
+        "min": 24686.0,
+        "max": 42550.0,
+        "mean": 32099.666666666668,
+        "std": 4789.948435791753
+      }
+    },
+    "Rubber, natural": {
+      "count": 39,
+      "yield_stats": {
+        "min": 5249.0,
+        "max": 10285.0,
+        "mean": 7824.897435897436,
+        "std": 1600.2550420886337
+      }
+    }
+  },
+  "timestamp": "2025-03-09 16:53:54.239008",
+  "memory_delta": 0.0,
+  "peak_memory": 0.0,
+  "benchmark_score": {
+    "total_score": 76.06,
+    "quality_percentage": 86.82,
+    "speed_percentage": 32.66,
+    "resource_percentage": 87.15,
+    "details": {
+      "quality_weight": 60,
+      "speed_weight": 20,
+      "resource_weight": 20,
+      "quality_penalty": 1.0,
+      "mape_ratio": 0.879,
+      "runtime_variance": 0.166,
+      "latency_variance": 0.0
+    }
+  }
+}

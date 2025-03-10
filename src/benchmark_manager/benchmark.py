@@ -108,13 +108,13 @@ class Benchmark:
         self.logger.info(f"Saving visualization to: {viz_path}")
         
         plt.ioff()
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(18, 12))  # Increased width from 15 to 18
         
-        # Add suptitle with proper spacing
+        # Add suptitle with less spacing to top
         plt.suptitle('AI Framework Benchmark Comparison Results', 
                     fontsize=16, 
                     fontweight='bold',
-                    y=1.02)  # Moved up to prevent overlap
+                    y=0.98)
         
         # Transpose DataFrames to group by benchmark and color by framework
         pd.DataFrame(all_metrics['quality_percentage']).T.plot(kind='bar', ax=ax1, title='Quality Score')
@@ -128,8 +128,14 @@ class Benchmark:
             ax.tick_params(axis='x', rotation=45)
             ax.legend(title='Framework', bbox_to_anchor=(1.05, 1), loc='upper left')
         
-        # Adjust layout to prevent overlap
-        plt.subplots_adjust(top=0.85, right=0.85, hspace=0.3)
+        # Adjust layout - increased horizontal spacing
+        plt.subplots_adjust(
+            top=0.92,      # reduced top margin
+            right=0.90,    # increased right margin (from 0.85 to 0.90)
+            bottom=0.15,   # bottom margin
+            hspace=0.5,    # height space between plots
+            wspace=0.5     # increased width space between plots (from 0.3 to 0.5)
+        )
         
         plt.savefig(viz_path, bbox_inches='tight', dpi=300)
         plt.close()
@@ -138,8 +144,9 @@ class Benchmark:
         leaderboard_path = os.path.join(self.output_dir, f"benchmark_results_leaderboard_{timestamp}.png")
         self.logger.info(f"Saving leaderboard to: {leaderboard_path}")
         
-        # Create styled DataFrame
+        # Create DataFrame and add average column
         df = pd.DataFrame(total_scores)
+        df['Avg Score'] = df.mean(axis=1).round(2)  # Calculate row averages
         styled_df = df.style.format("{:.2f}").set_caption("AI Framework Benchmark Results")
         
         # Save to PNG without displaying
