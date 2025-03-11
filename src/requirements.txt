@@ -4,3 +4,5 @@ pandas
 langchain_groq
 groq
 tiktoken
+crewai
+pyautogen

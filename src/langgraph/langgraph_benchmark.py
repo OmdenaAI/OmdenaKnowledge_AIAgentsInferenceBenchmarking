@@ -1,92 +1,73 @@
 import os
 import time
+import sys
 import pandas as pd
+import tracemalloc
+import tiktoken
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
-from langgraph.graph import StateGraph,END
+from langgraph.graph import StateGraph
 from typing import TypedDict
 from groq import Groq
+import yaml
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(BASE_DIR)
+from save_to_csv import save_results_to_csv
+from rate_paragraph import rate_paragraph
+from nodes_agents import generate_paragraph
 
 # Load environment variables
 load_dotenv()
-
-# Initialize Groq client for rating
-client = Groq(api_key=os.environ['GROQ_API_KEY'])
-
-# Initialize LLM
-llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
-    api_key=os.getenv("GROQ_API_KEY"),
-    temperature=0.1,
-    max_tokens=1000,
-)
 
 class AgentState(TypedDict):
     keyword: str
     response: str
 
-def generate_paragraph(state: AgentState) -> AgentState:
-    keyword = state["keyword"]
-    prompt = f"""
-    Role: Content Writer
-    Goal: Generate a short descriptive paragraph based on a single input keyword.
-    Backstory: A skilled AI writer trained to craft engaging and meaningful content.
-
-    Task Description: Generate a short, descriptive paragraph based on the keyword '{keyword}'.
-    It should ensure clarity, coherence, and relevance while maintaining an engaging tone.
-
-    Expected Output:
-    - A well-structured, concise, and descriptive paragraph (50-100 words).
-    - The paragraph should be grammatically correct and contextually relevant to the keyword.
-    - The style should be engaging and adaptable to different contexts if required.
-    """
-    
-    response = llm.invoke(prompt)
-    return {"keyword": keyword, "response": response.content}
-
-def rate_paragraphs(paragraphs):
-    rated_results = []
-    for keyword, latency, paragraph in paragraphs:
-        messages = [
-            {"role": "system", "content": "You are an AI assistant that rates paragraphs on a scale of 1-10 based on:\n1. Clarity and coherence\n2. Relevance to the topic\n3. Engagement and fluency.\nRespond with only a single number between 1 and 10."},
-            {"role": "user", "content": paragraph},
-        ]
-        try:
-            chat_completion = client.chat.completions.create(
-                messages=messages, 
-                model="llama-3.2-90b-vision-preview",
-            )
-            rating = chat_completion.choices[0].message.content.strip()
-            rating = rating if rating.isdigit() else "Invalid rating received"
-        except Exception as e:
-            rating = f"Error: {e}"
-        rated_results.append((keyword, latency, paragraph, rating))
-        print(f"Keyword: {keyword} | Rating: {rating}/10")
-    return rated_results
-
 # Define workflow
 workflow = StateGraph(AgentState)
-workflow.add_node("writer", generate_paragraph)
+workflow.add_node("writer", lambda state: generate_paragraph(state, llm, config))
 workflow.set_entry_point("writer")
 workflow.set_finish_point("writer")
 app = workflow.compile()
 
-def benchmark(test_queries):
+def text_generation(test_queries):
     results = []
     total_keywords = len(test_queries)
     total_start_time = time.time()
+    total_tokens_used = 0  # Track total tokens
+    
+    # Start memory tracking
+    tracemalloc.start()
     
     for query in test_queries:
+        tracemalloc.reset_peak()
+        snapshot_before = tracemalloc.take_snapshot()
+        
         start_time = time.time()
         result = app.invoke({"keyword": query})
         end_time = time.time()
         
         latency = end_time - start_time
         paragraph = result['response']
-        results.append((query, latency, paragraph))
-        print(f"Keyword: {query} | Latency: {latency:.4f} sec")
+        
+        # Measure memory usage
+        snapshot_after = tracemalloc.take_snapshot()
+        peak_memory = tracemalloc.get_traced_memory()[1] / 1024**2  # Convert to MB
+        memory_diff = sum(stat.size_diff for stat in snapshot_after.compare_to(snapshot_before, 'lineno')) / 1024**2
+        
+        # Manually count tokens
+        input_tokens = len(enc.encode(query))  # Tokens for input query
+        output_tokens = len(enc.encode(str(paragraph)))  # Tokens for generated paragraph
+        total_tokens = input_tokens + output_tokens  # Total tokens for this request
+        total_tokens_used += total_tokens  # Accumulate total token count
+        
+        rating = rate_paragraph(paragraph, client, prompts, llm_config)
+        
+        results.append((query, latency, paragraph, rating, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens))
+        print(f"Keyword: {query} | Latency: {latency:.4f} sec | Tokens: {total_tokens} | Peak Memory: {peak_memory:.4f} MB | Memory Delta: {memory_diff:.4f} MB | Rating: {rating}/10")
     
-    rated_results = rate_paragraphs(results)
+    # Stop memory tracking
+    tracemalloc.stop()
     
     total_end_time = time.time()
     total_time_taken = total_end_time - total_start_time
@@ -95,15 +76,40 @@ def benchmark(test_queries):
     print(f"\nTotal Keywords Processed: {total_keywords}")
     print(f"Total Time Taken: {total_time_taken:.4f} seconds")
     print(f"Throughput: {throughput:.4f} keywords per second")
+    print(f"Total Tokens Used in Benchmark: {total_tokens_used}")
     
-    df = pd.DataFrame(rated_results, columns=["Keyword", "Latency (seconds)", "Generated Paragraph", "Response Rating"])
-    df.to_csv("benchmark_results.csv", index=False, encoding="utf-8")
-    print("Results saved to benchmark_results.csv")
+    save_results_to_csv(results, total_keywords, total_time_taken, throughput, total_tokens_used, csv_save, framework="langgraph")
 
-# Define test queries
-test_queries = ['Rainforest', 'Desert', 'Robotics', 'Blockchain', 'Tennis',
-                'Golf', 'Coffee', 'Friendship', 'Venice', 'Tokyo', 
-                'Galaxy', 'DNA', 'Painting', 'Sculpture']
 
+
+DOTENV_PATH = os.path.join(BASE_DIR, ".env")
+load_dotenv(DOTENV_PATH)
+
+# Load config.yaml from the project root
+CONFIG_PATH = os.path.join(BASE_DIR, "config.yaml")
+
+with open(CONFIG_PATH, "r") as file:
+    config = yaml.safe_load(file)
+
+llm_config = config["llm"]
+encoder_name = config["tiktoken_encoder"]
+prompts = config["prompts"]
+csv_save = config["csv"]
+benchmark_keywords = config["benchmark"]
+
+client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+
+# LLM Setup
+llm = ChatGroq(
+    model=llm_config["langgraph_agent_model"],
+    api_key=os.environ['GROQ_API_KEY'],
+    temperature=llm_config["temperature"],
+    max_tokens=llm_config["max_tokens"],
+    )
+
+enc = tiktoken.get_encoding(encoder_name) 
+
+# Run Benchmarking
 if __name__ == "__main__":
-    benchmark(test_queries)
+    test_queries = benchmark_keywords["test_queries"]
+    text_generation(test_queries)
