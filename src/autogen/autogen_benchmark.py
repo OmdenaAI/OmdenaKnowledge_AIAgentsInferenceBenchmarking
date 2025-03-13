@@ -1,54 +1,20 @@
 import autogen
 import os
 import time
+import sys
+import tracemalloc
 import pandas as pd
+import tiktoken
 from dotenv import load_dotenv
 from groq import Groq
+import yaml
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(BASE_DIR)
+from save_to_csv import save_results_to_csv
+from rate_paragraph import rate_paragraph
+from agents import writer_agent
 
 load_dotenv()
-
-# Configure LLM
-config_list = [{
-    "model": "llama-3.3-70b-versatile",
-    "api_key": os.environ.get("GROQ_API_KEY"),
-    "api_type": "groq"
-}]
-
-# Initialize Groq client
-client = Groq(api_key=os.environ["GROQ_API_KEY"])
-
-def rate_paragraph(paragraph: str) -> str:
-    """Sends a paragraph to Groq LLM and gets a rating from 1 to 10."""
-    messages = [
-        {"role": "system", "content": "You are an AI assistant that rates paragraphs on a scale of 1-10 based on:"
-                                      " 1. Clarity and coherence"
-                                      " 2. Relevance to the topic"
-                                      " 3. Engagement and fluency."
-                                      " Respond with only a single number between 1 and 10."},
-        {"role": "user", "content": paragraph},
-    ]
-
-    try:
-        chat_completion = client.chat.completions.create(
-            messages=messages, 
-            model="llama-3.2-90b-vision-preview",
-        )
-        rating = chat_completion.choices[0].message.content.strip()
-        return rating if rating.isdigit() else "Invalid rating received"
-
-    except Exception as e:
-        return f"Error: {e}"
-
-# Define the agent
-writer_agent = autogen.AssistantAgent(
-    name="ContentWriter",
-    system_message=(
-        "Role: Content Writer\n"
-        "Goal: Generate a short descriptive paragraph based on a single input keyword.\n"
-        "Backstory: A skilled AI writer trained to craft engaging and meaningful content."
-    ),
-    llm_config={"config_list": config_list},
-)
 
 # Define the user proxy
 user_proxy = autogen.UserProxyAgent(
@@ -62,42 +28,49 @@ user_proxy = autogen.UserProxyAgent(
     },
 )
 
-# Function to generate text and measure performance
 def text_generation(test_queries):
     results = []
     total_keywords = len(test_queries)
+    total_tokens_used = 0
 
+    tracemalloc.start()
     total_start_time = time.time()
     
     for query in test_queries:
+        tracemalloc.reset_peak()
+        snapshot_before = tracemalloc.take_snapshot()
+
         start_time = time.time()
-        
         response = user_proxy.initiate_chat(
-            writer_agent,
-            message=(f"The agent will generate a short, descriptive paragraph based on '{query}'. "
-                     "It should ensure clarity, coherence, and relevance while maintaining an engaging tone.\n\n"
-                     "Expected Output:\n"
-                     "- A well-structured, concise, and descriptive paragraph (50-100 words).\n"
-                     "- The paragraph should be grammatically correct and contextually relevant to the keyword.\n"
-                     "- The style should be engaging and adaptable to different contexts if required."),
+            writer_agent(config_list, prompts),
+            message=(prompts["task"]["description"].format(keyword=query)
+                    + "\n\nExpected Output:\n"
+                    + prompts["task"]["expected_output"]),
             max_turns=2
         )
-        
         end_time = time.time()
         latency = end_time - start_time
-        generated_text = str(response)
-        
-        print(f"Keyword: {query} | Latency: {latency:.4f} sec")
-        
-        # Append raw results
-        results.append((query, latency, generated_text))
+        generated_text = response.chat_history[-1]["content"] if response.chat_history else "No output"
 
-    # Rating each paragraph
+        snapshot_after = tracemalloc.take_snapshot()
+        peak_memory = tracemalloc.get_traced_memory()[1] / 1024**2  # Convert to MB
+        memory_diff = sum(stat.size_diff for stat in snapshot_after.compare_to(snapshot_before, 'lineno')) / 1024**2
+
+        input_tokens = len(enc.encode(query))
+        output_tokens = len(enc.encode(str(generated_text)))
+        total_tokens = input_tokens + output_tokens
+        total_tokens_used += total_tokens
+
+        print(f"Keyword: {query} | Latency: {latency:.4f} sec | Tokens: {total_tokens} | Peak Memory: {peak_memory:.4f} MB | Memory Delta: {memory_diff:.4f} MB")
+        results.append((query, latency, generated_text, None, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens))
+    
+    tracemalloc.stop()
+
     rated_results = []
-    for keyword, latency, paragraph in results:
-        rating = rate_paragraph(paragraph)
-        rated_results.append((keyword, latency, paragraph, rating))
-        print(f"Keyword: {keyword} | Rating: {rating}/10")
+    for keyword, latency, paragraph,_, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens in results:
+        rating = rate_paragraph(paragraph, client, prompts, llm_config)
+        rated_results.append((keyword, latency, paragraph, rating, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens))
+        print(f"Keyword: {keyword} | Rating: {rating}/10 | Tokens Used: {total_tokens} | Peak Memory: {peak_memory:.4f} MB | Memory Delta: {memory_diff:.4f} MB")
 
     total_end_time = time.time()
     total_time_taken = total_end_time - total_start_time
@@ -106,22 +79,37 @@ def text_generation(test_queries):
     print(f"\nTotal Keywords Processed: {total_keywords}")
     print(f"Total Time Taken: {total_time_taken:.4f} seconds")
     print(f"Throughput: {throughput:.4f} keywords per second")
+    print(f"Total Tokens Used in Benchmark: {total_tokens_used}")
 
-    # Save results to CSV
-    save_results_to_csv(rated_results)
+    save_results_to_csv(results, total_keywords, total_time_taken, throughput, total_tokens, csv_save, framework="autogen")
 
-def save_results_to_csv(results, filename="autogen_benchmark_results.csv"):
-    df = pd.DataFrame(results, columns=["Keyword", "Latency (seconds)", "Generated Paragraph", "Response Rating"])
-    df.to_csv(filename, index=False, encoding="utf-8")
-    print(f"Results saved to {filename}")
 
-# Test queries
-test_queries = [
-    'Rainforest', 'Desert', 'Robotics', 'Blockchain', 'Tennis',
-    'Golf', 'Coffee', 'Friendship', 'Venice', 'Tokyo',
-    'Galaxy', 'DNA', 'Painting', 'Sculpture'
-]
+DOTENV_PATH = os.path.join(BASE_DIR, ".env")
+load_dotenv(DOTENV_PATH)
 
-# Run benchmarking
+CONFIG_PATH = os.path.join(BASE_DIR, "config.yaml")
+
+with open(CONFIG_PATH, "r") as file:
+    config = yaml.safe_load(file)
+
+llm_config = config["llm"]
+encoder_name = config["tiktoken_encoder"]
+prompts = config["prompts"]
+csv_save = config["csv"]
+benchmark_keywords = config["benchmark"]
+
+client = Groq(api_key=os.environ["GROQ_API_KEY"])
+
+config_list = [{
+    "model": llm_config["langgraph_agent_model"],
+    "api_key": os.environ.get("GROQ_API_KEY"),
+    "api_type": llm_config["api_type"],
+    "temperature": llm_config["temperature"],
+    "max_tokens": llm_config["max_tokens"]
+}]
+
+enc = tiktoken.get_encoding(encoder_name) 
+
 if __name__ == "__main__":
+    test_queries = benchmark_keywords["test_queries"]
     text_generation(test_queries)

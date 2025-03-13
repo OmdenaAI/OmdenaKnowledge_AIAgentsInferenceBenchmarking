@@ -1,8 +1,8 @@
-langgraph
-python-dotenv
-pandas
-langchain_groq
-groq
-tiktoken
-crewai
-pyautogen
+langgraph==0.3.1
+python-dotenv==1.0.1
+pandas==2.2.3
+langchain_groq==0.2.4
+groq==0.18.0
+tiktoken==0.8.0
+crewai==0.100.1
+pyautogen==0.7.6
