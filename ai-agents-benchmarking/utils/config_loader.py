@@ -49,5 +49,6 @@ def get_llm_config(model_name=None, config_path="config/settings.yaml"):
         'model_name': model_name or llm_settings.get('model_name', 'default_model'),
         'base_url': llm_settings.get('base_url', ''),
         'api_key': llm_settings.get('api_key', ''),
-        'temperature': 0.7  # Default temperature
+        'api_type': llm_settings.get('api_type', ''),
+        'temperature': llm_settings.get('temperature', 0.7)
     }

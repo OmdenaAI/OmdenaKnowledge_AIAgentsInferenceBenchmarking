@@ -4,8 +4,6 @@ from benchmarks.simple_tasks import SIMPLE_TASKS
 from benchmarks.complex_tasks import COMPLEX_TASKS
 import logging
 import time
-from langchain_community.chat_models import ChatOpenAI
-from langchain_community.llms import OpenAI
 from utils.latency_tracker import LatencyTracker
 from utils.result_saver import save_results_to_csv, plot_benchmark_results, load_results_from_csv
 from utils.token_tracker import TokenTracker
@@ -19,6 +17,7 @@ import os
 # ==============================
 def get_langgraph_framework_name():
     return "LangGraph"
+
 # ==============================
 # ✅ GLOBAL LOGGING CONFIGURATION
 # ==============================
@@ -34,83 +33,101 @@ for noisy_logger in ['LiteLLM', 'httpx', 'opentelemetry.trace', 'autogen.import_
 logger = logging.getLogger(__name__)
 
 # ==============================
-# ✅ IMPORT LANGGRAPH FRAMEWORK
+# ✅ IMPORT LangGraph FRAMEWORK
 # ==============================
 try:
     from langchain_core.prompts import ChatPromptTemplate
-    from langchain_core.runnables import RunnableLambda
-    from langgraph.graph import END, StateGraph
-    from langchain_community.llms import OpenAI, Ollama
-    from langchain_core.messages import HumanMessage
+    from langchain_core.messages import HumanMessage, AIMessage
+    from langchain_core.runnables import RunnablePassthrough
+    from langgraph.graph import StateGraph, END
+    from langchain_community.chat_models import ChatOpenAI
+    from langchain_community.llms import Ollama
+    from typing import TypedDict, List, Dict, Union
 except ImportError:
-    raise ImportError("LangGraph is not installed. Please install it using: pip install langgraph langchain-community")
+    raise ImportError("LangGraph is not installed. Please install it using: pip install langgraph langchain-core langchain-community")
 
 # ==============================
-# ✅ LANGGRAPH LLM SETUP
+# ✅ LangGraph LLM SETUP
 # ==============================
 def get_langgraph_model(model_name=None):
     """Initialize LangGraph model for benchmarking, using either OpenAI or Ollama based on configuration."""
     llm_config = get_llm_config(model_name)
+    api_type = llm_config["api_type"]
 
-    if llm_config["api_type"] == "openai":
-        return OpenAI(model=llm_config['model_name'],
-                        temperature=llm_config['temperature'],
-                        openai_api_key=llm_config['api_key'])
+    if api_type == "openai":
+        return ChatOpenAI(model=llm_config['model_name'],
+                          temperature=llm_config['temperature'],
+                          openai_api_key=llm_config['api_key'])
     else:
         return Ollama(model=llm_config['model_name'],
-                        base_url=llm_config['api_base'],
-                        temperature=llm_config['temperature'])
+                       base_url=llm_config['base_url'],
+                       temperature=llm_config['temperature'])
 
 # ==============================
-# ✅ EXECUTE TASKS WITH LANGGRAPH
+# ✅ LangGraph STATE
+# ==============================
+class AgentState(TypedDict):
+    messages: List[str]
+
+# ==============================
+# ✅ LangGraph AGENT
+# ==============================
+# def agent(state: AgentState) -> Dict:
+#     """LangGraph agent."""
+#     last_message = state["messages"][-1]
+#     return {"messages": [last_message]}
+
+# ==============================
+# ✅ EXECUTE TASKS WITH LangGraph
 # ==============================
 def execute_task_with_langgraph(task_func, model_name=None):
-    """Executes a given task using LangGraph."""
+    """Executes a given task using LangGraph, configured for either OpenAI (cloud) or Ollama (local)."""
     tracker = LatencyTracker()
     memory_tracker = MemoryTracker()
-    token_tracker = TokenTracker(model_name or "gpt-4")
+    llm_config = get_llm_config(model_name)
+    token_tracker = TokenTracker(llm_config.get("model_name", "gpt-4"), llm_config.get("api_type", "openai"))
+
     tracker.start()
     memory_tracker.start()
-
     try:
-        # Correctly initialize LLM using the configuration
         llm = get_langgraph_model(model_name)
         task_data = task_func()
         prompt = task_data["prompt"]
         expected_answer = task_data.get('expected_answer', '')
         task_type = task_data.get('task_type', 'task')
-        
+
         # Count tokens for the prompt
         token_count = token_tracker.count_tokens(prompt)
 
-        # Correctly set up the prompt template
-        prompt_template = ChatPromptTemplate.from_messages([("human", "{query}")])
+        # LangGraph setup
+        prompt_template = ChatPromptTemplate.from_messages([("human", "{messages}")])
+        agent_runnable = prompt_template | llm
+        def agent(state):
+            last_message = state["messages"][-1]
+            response: Union[str, AIMessage] = agent_runnable.invoke({"messages": last_message})
+            if isinstance(response, str):
+                return {"messages": [response]}
+            else:
+                return {"messages": [response.content]}
 
-        # Define the node
-        def generate(query):
-            messages = prompt_template.format_messages(query=query)
-            return llm.invoke(messages).content
+        workflow = StateGraph(AgentState)
+        workflow.add_node("agent", agent)
+        workflow.set_entry_point("agent")
+        workflow.add_edge("agent", END)
+        graph = workflow.compile()
 
-        # Define the graph
-        workflow = StateGraph(dict)
-        workflow.add_node("generate", RunnableLambda(generate))
-        workflow.set_entry_point("generate")
-        workflow.add_edge("generate", END)
-        app = workflow.compile()
-
+        # Execute LangGraph
         exec_time = tracker.start()
-        result = app.invoke({"query": prompt})
+        result = graph.invoke({"messages": [prompt]})["messages"][0] # changed this line
         exec_time = tracker.stop()
         peak_memory = memory_tracker.stop()
 
         # Calculate tokens for the result
         response_tokens = token_tracker.count_tokens(str(result))
         total_tokens = token_tracker.get_total_tokens()
-        
-        # Calculate accuracy
+
         accuracy = calculate_accuracy(result, expected_answer)
 
-        # Output with resource usage
         print(f"\nLLM Output: {result}")
         print(f"Task: {task_type} | Accuracy: {accuracy}% | Time: {exec_time}s")
         print(f"Total Tokens Used: {total_tokens}")
@@ -121,7 +138,7 @@ def execute_task_with_langgraph(task_func, model_name=None):
     except Exception as e:
         exec_time = tracker.stop()
         peak_memory = memory_tracker.stop()
-        print(f"❌ Error: {e} | Time: {exec_time}s | Memory: {peak_memory:.2f} MB")
+        logger.exception(f"❌ Error during task execution: {e} | Time: {exec_time}s | Memory: {peak_memory:.2f} MB")
         return 0.0, exec_time, 0, peak_memory
 
 # ==============================

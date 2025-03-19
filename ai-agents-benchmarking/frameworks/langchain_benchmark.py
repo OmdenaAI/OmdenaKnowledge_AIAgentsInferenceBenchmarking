@@ -54,7 +54,7 @@ def get_langchain_model(model_name=None):
                       openai_api_key=llm_config['api_key'])
     else:
         return Ollama(model=llm_config['model_name'],
-                       base_url=llm_config['api_base'],
+                       base_url=llm_config['base_url'],
                        temperature=llm_config['temperature'])
 
 # ==============================

@@ -25,6 +25,7 @@ def consolidate_framework_results(results_dir="data/results"):
                 try:
                     df = pd.read_csv(filepath)
                     df["Framework"] = framework_name # ✅ Add the framework column.
+                    df.rename(columns={'Time': 'Execution Time'}, inplace=True) # added this line
                     framework_data[framework_name].append(df)
                 except Exception as e:
                     logger.error(f"Error reading {filename}: {e}")
@@ -66,13 +67,13 @@ def create_leaderboard(df):
     # Group by framework and calculate averages
     try:
         leaderboard = df.groupby('Framework').agg(
-            {'Accuracy': 'mean', 'Execution Time': 'mean'}
+            {'Accuracy': 'mean', 'Execution Time': 'mean', 'Tokens': 'mean', 'Memory': 'mean'} # updated this line
         ).reset_index().sort_values(by="Accuracy", ascending=False)
         
         #Rename columns
-        leaderboard.rename(columns={'Accuracy': 'Average Accuracy', 'Execution Time': 'Average Time'}, inplace=True)
+        leaderboard.rename(columns={'Accuracy': 'Average Accuracy', 'Execution Time': 'Average Time', 'Tokens': 'Average Tokens', 'Memory': 'Average Memory'}, inplace=True) # updated this line
         return leaderboard
 
     except Exception as e:
         logger.error(f"Error creating leaderboard: {e}")
-        return pd.DataFrame(columns=["Framework", "Average Accuracy", "Average Time"])
+        return pd.DataFrame(columns=["Framework", "Average Accuracy", "Average Time", "Average Tokens", "Average Memory"]) # updated this line

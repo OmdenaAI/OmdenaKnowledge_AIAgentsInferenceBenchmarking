@@ -1,21 +1,23 @@
 # frameworks/swarm_benchmark.py
 
+from benchmarks.simple_tasks import SIMPLE_TASKS
+from benchmarks.complex_tasks import COMPLEX_TASKS
 import logging
 import time
-import os
 from utils.latency_tracker import LatencyTracker
 from utils.result_saver import save_results_to_csv, plot_benchmark_results, load_results_from_csv
 from utils.token_tracker import TokenTracker
 from utils.memory_tracker import MemoryTracker
 from utils.accuracy_calculator import calculate_accuracy
 from utils.config_loader import get_llm_config
-from benchmarks.simple_tasks import SIMPLE_TASKS
-from benchmarks.complex_tasks import COMPLEX_TASKS
+import os
+
 # ==============================
 # ✅ FRAMEWORK NAME
 # ==============================
 def get_swarm_framework_name():
     return "Swarm"
+
 # ==============================
 # ✅ GLOBAL LOGGING CONFIGURATION
 # ==============================
@@ -29,70 +31,53 @@ for noisy_logger in ['LiteLLM', 'httpx', 'opentelemetry.trace', 'autogen.import_
     logging.getLogger(noisy_logger).setLevel(logging.ERROR)
 
 logger = logging.getLogger(__name__)
+
 # ==============================
 # ✅ IMPORT Swarm FRAMEWORK
 # ==============================
 try:
-    from swarm import Swarm, Agent
     from openai import OpenAI
+    from langchain_community.llms import Ollama
 except ImportError:
-    raise ImportError("Swarm is not installed. Please install it using: pip install git+https://github.com/openai/swarm.git")
-
-# ==============================
-# ✅ SWARM AGENT SETUP
-# ==============================
-def create_swarm_agents(model_name=None):
-    """Initialize Swarm agents for benchmarking."""
-    llm_config = get_llm_config(model_name)
-    agents = {}
-
-    # Create agents for simple tasks
-    for task_name, task_data in SIMPLE_TASKS.items():
-        agents[task_name] = Agent(
-            name=f"Agent_{task_name}",
-            instructions=task_data["prompt"],
-            functions=[task_data]  # Added task_func to the agent's functions
-        )
-
-    # Create agents for complex tasks
-    for task_name, task_data in COMPLEX_TASKS.items():
-        agents[task_name] = Agent(
-            name=f"Agent_{task_name}",
-            instructions=task_data["prompt"],
-            functions=[task_data]  # Added task_func to the agent's functions
-        )
-
-    return agents
+    raise ImportError("Swarm dependencies are not installed. Please install them using: pip install openai langchain-community")
 
 # ==============================
 # ✅ EXECUTE TASKS WITH SWARM
 # ==============================
 def execute_task_with_swarm(task_func, model_name=None):
-    """Executes a given task using Swarm."""
+    """Executes a given task using Swarm, configured for either OpenAI (cloud) or Ollama (local)."""
     tracker = LatencyTracker()
     memory_tracker = MemoryTracker()
-    token_tracker = TokenTracker(model_name or "gpt-4")
+    llm_config = get_llm_config(model_name)
+    token_tracker = TokenTracker(llm_config.get("model_name", "gpt-4"), llm_config.get("api_type", "openai")) # changed this line
+    api_type = llm_config.get("api_type", "openai")  # Default to OpenAI
 
     tracker.start()
     memory_tracker.start()
-
     try:
-        llm_config = get_llm_config(model_name)
         task_data = task_func()
         prompt = task_data["prompt"]
         expected_answer = task_data.get('expected_answer', '')
         task_type = task_data.get('task_type', 'task')
-        
+
         # Count tokens for the prompt
         token_count = token_tracker.count_tokens(prompt)
 
-        client = OpenAI(api_key=llm_config["api_key"])
         exec_time = tracker.start()
-        response = client.chat.completions.create(
-            model=llm_config["model_name"],
-            messages=[{"role": "user", "content": prompt}]
-        )
-        result = response.choices[0].message.content
+        if api_type == "openai":
+            client = OpenAI(api_key=llm_config["api_key"])
+            response = client.chat.completions.create(
+                model=llm_config["model_name"],
+                messages=[{"role": "user", "content": prompt}]
+            )
+            result = response.choices[0].message.content
+        elif api_type == "ollama":
+            client = Ollama(model=llm_config['model_name'],
+                           base_url=llm_config['base_url'],
+                           temperature=llm_config['temperature'])
+            result = client.invoke(prompt)
+        else:
+            raise ValueError(f"Unsupported api_type: {api_type}")
         exec_time = tracker.stop()
         peak_memory = memory_tracker.stop()
 
@@ -100,10 +85,8 @@ def execute_task_with_swarm(task_func, model_name=None):
         response_tokens = token_tracker.count_tokens(str(result))
         total_tokens = token_tracker.get_total_tokens()
 
-        # Calculate accuracy
         accuracy = calculate_accuracy(result, expected_answer)
 
-        # Output with resource usage
         print(f"\nLLM Output: {result}")
         print(f"Task: {task_type} | Accuracy: {accuracy}% | Time: {exec_time}s")
         print(f"Total Tokens Used: {total_tokens}")
@@ -114,7 +97,7 @@ def execute_task_with_swarm(task_func, model_name=None):
     except Exception as e:
         exec_time = tracker.stop()
         peak_memory = memory_tracker.stop()
-        print(f"❌ Error: {e} | Time: {exec_time}s | Memory: {peak_memory:.2f} MB")
+        logger.exception(f"❌ Error during task execution: {e} | Time: {exec_time}s | Memory: {peak_memory:.2f} MB")
         return 0.0, exec_time, 0, peak_memory
 
 # ==============================
@@ -123,13 +106,12 @@ def execute_task_with_swarm(task_func, model_name=None):
 def benchmark_swarm():
     """Runs benchmarking tasks on Swarm."""
     print("🚀 Running Swarm Benchmarks...\n")
-    
-    agents = create_swarm_agents()
+
     total_tracker = LatencyTracker()
     total_tracker.start()
 
     all_results = []
-        
+
     # Benchmark Simple Tasks
     for task_name, task_func in SIMPLE_TASKS.items():
         accuracy, exec_time, total_tokens, peak_memory = execute_task_with_swarm(task_func)

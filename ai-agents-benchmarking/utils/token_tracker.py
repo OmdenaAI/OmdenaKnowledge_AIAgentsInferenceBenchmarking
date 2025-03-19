@@ -1,32 +1,69 @@
-import tiktoken
 import logging
+from transformers import AutoTokenizer
 
 logger = logging.getLogger(__name__)
 
+# Mapping of Ollama model names to Hugging Face model names
+OLLAMA_TO_HF_MODEL_MAPPING = {
+    "llama3": "hf-internal-testing/llama-tokenizer",  
+    "mistral": "meta-mistral/Mistral-2-7b-hf", 
+    "gemma": "google/gemma-7b-it", 
+}
+
 class TokenTracker:
-    def __init__(self, model_name="gpt-4"):
+    """Tracks token usage for a given model using the Hugging Face transformers library.
+
+    This class provides a more flexible and comprehensive way to handle tokenization
+    for a wide range of models, including those not directly supported by tiktoken.
+    """
+
+    def __init__(self, model_name="gpt-4", api_type="openai"):
+        """
+        Initialize the TokenTracker.
+
+        Args:
+            model_name (str): The name of the model for which to track tokens.
+        """
         self.model_name = model_name
         self.total_tokens = 0
-        self.encoding = tiktoken.encoding_for_model(model_name)
+        
+        # Translate Ollama model name to Hugging Face model name if needed
+        if api_type == "ollama":
+            hf_model_name = OLLAMA_TO_HF_MODEL_MAPPING.get(model_name, model_name)
+        else:
+            hf_model_name = model_name
+
+        try:
+            self.tokenizer = AutoTokenizer.from_pretrained(hf_model_name)
+            logger.info(f"Using tokenizer for model: {hf_model_name}")
+        except Exception as e:
+            logger.warning(
+                f"Model '{hf_model_name}' not found in Hugging Face's model list. "
+                "Using 'gpt2' as fallback. Token counts will be approximations. Error: {e}"
+            )
+            self.tokenizer = AutoTokenizer.from_pretrained("gpt2")
 
     def count_tokens(self, text):
-        """Count tokens in a given text."""
-        tokens = self.encoding.encode(text)
-        token_count = len(tokens)
-        self.total_tokens += token_count
-        logger.info(f"Tokens in current request: {token_count}")
-        return token_count
+        """
+        Count the number of tokens in a given text.
 
-    def reset(self):
-        """Reset the token count."""
-        self.total_tokens = 0
+        Args:
+            text (str): The text to tokenize.
+
+        Returns:
+            int: The number of tokens in the text.
+        """
+        tokens = self.tokenizer.encode(text)
+        num_tokens = len(tokens)
+        self.total_tokens += num_tokens
+        # logger.info(f"Tokens in current request: {num_tokens}")
+        return num_tokens
 
     def get_total_tokens(self):
-        """Get total tokens used."""
-        return self.total_tokens
+        """
+        Get the total number of tokens used.
 
-if __name__ == "__main__":
-    tracker = TokenTracker("gpt-4")
-    text = "Hello, how are you doing today?"
-    print(f"Tokens used: {tracker.count_tokens(text)}")
-    print(f"Total tokens so far: {tracker.get_total_tokens()}")
+        Returns:
+            int: The total number of tokens used.
+        """
+        return self.total_tokens

@@ -7,18 +7,20 @@ benchmark:
 
 llm_execution:
   model_name: "llama3"  # Or any other LLM
-  base_url: "http://localhost:11434"  # Unified API endpoint
-  api_key: "your-api-key"
+  base_url: "http://localhost:11434"  
+  api_key: ""
+  api_type: "ollama" 
+  temperature: 0.7
 
 frameworks:
   - name: "CrewAI"
-    enabled: false
+    enabled: true
   - name: "LangChain"
-    enabled: false
+    enabled: true
   - name: "LangGraph"
-    enabled: false
+    enabled: true
   - name: "Swarm"
-    enabled: false
+    enabled: true
   - name: "AutoGen"
     enabled: true
 

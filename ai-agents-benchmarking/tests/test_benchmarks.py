@@ -58,7 +58,7 @@ class TestBenchmarkingFrameworks(unittest.TestCase):
     def test_visualization(self):
         """Test visualization function does not fail."""
         try:
-            visualize_results()
+            visualize_results(show_plots=True)
         except Exception as e:
             self.fail(f"Visualization failed: {e}")
 

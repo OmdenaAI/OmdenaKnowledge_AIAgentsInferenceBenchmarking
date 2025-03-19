@@ -47,6 +47,7 @@ def get_autogen_agents(model_name=None):
             "api_key": llm_config['api_key'],
             "temperature": llm_config['temperature'],
             "api_type": "ollama",
+            "cache_seed": None  # Disables caching
         }
     )
 

@@ -32,7 +32,7 @@ def run_all_benchmarks():
         except Exception as e:
             logging.error(f"Error in {name} benchmark: {e}")
 
-def visualize_results(result_file="results/public_leaderboard.csv"):
+def visualize_results(result_file="results/public_leaderboard.csv", show_plots=False):
     """Generates visualization from benchmark results."""
     logging.info(f"Visualizing results from {result_file}")
     try:
@@ -50,7 +50,11 @@ def visualize_results(result_file="results/public_leaderboard.csv"):
         plt.title("AI Agent Inference Time Comparison")
         plt.xticks(rotation=45)
         plt.grid(axis="y")
-        plt.show()
+        plt.savefig(f"{result_file.replace('.csv', '')}_time.png")
+        if show_plots:
+            plt.show()
+        else:
+            plt.close()
         
         # Plot accuracy comparison
         plt.figure(figsize=(10, 5))
@@ -60,7 +64,42 @@ def visualize_results(result_file="results/public_leaderboard.csv"):
         plt.title("AI Agent Accuracy Comparison")
         plt.xticks(rotation=45)
         plt.grid(axis="y")
-        plt.show()
+        plt.savefig(f"{result_file.replace('.csv', '')}_accuracy.png")
+        if show_plots:
+            plt.show()
+        else:
+            plt.close()
+
+        # Plot tokens comparison
+        plt.figure(figsize=(10, 5))
+        df.groupby("Framework")["Average Tokens"].mean().plot(kind="bar", color="lightgreen", edgecolor="black")
+        plt.xlabel("Framework")
+        plt.ylabel("Avg Tokens")
+        plt.title("AI Agent Tokens Comparison")
+        plt.xticks(rotation=45)
+        plt.grid(axis="y")
+        plt.savefig(f"{result_file.replace('.csv', '')}_tokens.png")
+        
+        if show_plots:
+            plt.show()
+        else:
+            plt.close()
+
+        # Plot memory comparison
+        plt.figure(figsize=(10, 5))
+        df.groupby("Framework")["Average Memory"].mean().plot(kind="bar", color="orange", edgecolor="black")
+        plt.xlabel("Framework")
+        plt.ylabel("Avg Memory (MB)")
+        plt.title("AI Agent Memory Comparison")
+        plt.xticks(rotation=45)
+        plt.grid(axis="y")
+        plt.savefig(f"{result_file.replace('.csv', '')}_tokens.png")
+        
+        if show_plots:
+            plt.show()
+        else:
+            plt.close()
+
     except Exception as e:
         logging.error(f"Error visualizing results: {e}")
 
@@ -69,11 +108,12 @@ def main():
     parser = argparse.ArgumentParser(description="Run AI agent benchmarking")
     parser.add_argument("--framework", type=str, choices=["CrewAI", "LangChain", "LangGraph", "Swarm", "AutoGen", "all"], default="all", help="Specify framework to benchmark or run all")
     parser.add_argument("--visualize", action="store_true", help="Visualize benchmark results")
+    parser.add_argument("--show_plots", action="store_true", help="Show plots instead of saving them") # added this line
     
     args = parser.parse_args()
     
     if args.visualize:
-        visualize_results()
+        visualize_results(show_plots=args.show_plots) # updated this line
     elif args.framework == "all":
         run_all_benchmarks()
     else:

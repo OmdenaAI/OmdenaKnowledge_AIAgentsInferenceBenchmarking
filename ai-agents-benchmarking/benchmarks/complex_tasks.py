@@ -8,12 +8,12 @@ def multi_step_reasoning_task():
         "task_type": "multi_step_reasoning"
     }
 
-def code_generation_task():
-    """AI-generated code based on requirements"""
-    return {
-        "prompt": "Generate a Python function that calculates the factorial of a number using recursion.",
-        "task_type": "code_generation"
-    }
+# def code_generation_task():
+#     """AI-generated code based on requirements"""
+#     return {
+#         "prompt": "Generate a Python function that calculates the factorial of a number using recursion.",
+#         "task_type": "code_generation"
+#     }
 
 def advanced_text_summarization_task():
     """Summarization of long, complex text"""
@@ -40,7 +40,7 @@ def api_data_extraction_task():
 # Dictionary mapping task names to functions
 COMPLEX_TASKS = {
     "multi_step_reasoning": multi_step_reasoning_task,
-    "code_generation": code_generation_task,
+    # "code_generation": code_generation_task,
     "advanced_summarization": advanced_text_summarization_task,
     "logical_deduction": logical_deduction_task,
     "api_extraction": api_data_extraction_task,

@@ -25,7 +25,7 @@ def save_results_to_csv(results, framework_name, directory="data/results"):
     file_path = os.path.join(directory, filename)
 
     # ✅ Updated columns to match data structure
-    df = pd.DataFrame(results, columns=["Task", "Accuracy", "Execution Time", "Tokens", "Memory Usage"])
+    df = pd.DataFrame(results, columns=["Task", "Accuracy", "Time", "Tokens", "Memory"]) # updated this line
 
     # Add framework information to the data
     df['Framework'] = framework_name
@@ -77,9 +77,9 @@ def plot_benchmark_results(df, title, save_path=None):
 
     tasks = df["Task"].astype(str)
     accuracy = df["Accuracy"]
-    exec_time = df["Execution Time"]
+    exec_time = df["Time"] # updated this line
     tokens = df["Tokens"]
-    memory_usage = df["Memory Usage"]
+    memory_usage = df["Memory"] # updated this line
 
     # Plot Accuracy
     plt.figure(figsize=(12, 5))
