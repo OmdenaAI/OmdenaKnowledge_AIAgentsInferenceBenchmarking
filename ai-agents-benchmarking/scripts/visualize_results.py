@@ -93,7 +93,7 @@ def visualize_results(result_file="results/public_leaderboard.csv", show_plots=F
         plt.title("AI Agent Memory Comparison")
         plt.xticks(rotation=45)
         plt.grid(axis="y")
-        plt.savefig(f"{result_file.replace('.csv', '')}_tokens.png")
+        plt.savefig(f"{result_file.replace('.csv', '')}_memory.png")
         
         if show_plots:
             plt.show()
