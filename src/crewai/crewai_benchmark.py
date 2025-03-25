@@ -1,20 +1,13 @@
 import time
-import sys
-from crewai import Crew, Agent, Task
-import os
-from dotenv import load_dotenv
-import pandas as pd
+from crewai import Crew
 from langchain_groq import ChatGroq
 from groq import Groq
 import tracemalloc
-import tiktoken
-import yaml 
+import tiktoken 
 from agents import writer_agent
 from tasks import writer_task
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.append(BASE_DIR)
-from save_to_csv import save_results_to_csv
-from rate_paragraph import rate_paragraph
+from config.config_loader import get_config
+from utils.common_functions import save_results_to_csv, rate_paragraph
 
 
 def text_generation(test_queries):
@@ -61,13 +54,13 @@ def text_generation(test_queries):
 
         total_tokens_used += total_tokens  # Accumulate total token count
 
-        results.append((query, latency, generated_text, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens))
+        results.append((query, latency, generated_text, None, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens))
     
     # Stop memory tracking
     tracemalloc.stop()
 
     rated_results = []
-    for keyword, latency, paragraph, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens in results:
+    for keyword, latency, paragraph,_, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens in results:
         rating = rate_paragraph(str(paragraph), client, prompts, llm_config)   
         rated_results.append((keyword, latency, paragraph, rating, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens))
         print(f"Keyword: {keyword} | Latency: {latency:.4f} sec | Rating: {rating}/10 | Tokens Used: {total_tokens} | Peak Memory: {peak_memory:.4f} MB | Memory Delta: {memory_diff:.4f} MB")
@@ -85,14 +78,7 @@ def text_generation(test_queries):
     save_results_to_csv(results, total_keywords, total_time_taken, throughput, total_tokens, csv_save, framework="crewai")
 
 
-DOTENV_PATH = os.path.join(BASE_DIR, ".env")
-load_dotenv(DOTENV_PATH)
-
-# Load config.yaml from the project root
-CONFIG_PATH = os.path.join(BASE_DIR, "config.yaml")
-
-with open(CONFIG_PATH, "r") as file:
-    config = yaml.safe_load(file)
+config = get_config()
 
 llm_config = config["llm"]
 encoder_name = config["tiktoken_encoder"]

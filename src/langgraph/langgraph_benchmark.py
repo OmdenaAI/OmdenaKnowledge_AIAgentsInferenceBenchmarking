@@ -61,14 +61,16 @@ def text_generation(test_queries):
         total_tokens = input_tokens + output_tokens  # Total tokens for this request
         total_tokens_used += total_tokens  # Accumulate total token count
         
-        rating = rate_paragraph(paragraph, client, prompts, llm_config)
         
-        results.append((query, latency, paragraph, rating, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens))
-        print(f"Keyword: {query} | Latency: {latency:.4f} sec | Tokens: {total_tokens} | Peak Memory: {peak_memory:.4f} MB | Memory Delta: {memory_diff:.4f} MB | Rating: {rating}/10")
+        results.append((query, latency, paragraph, None, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens))
     
-    # Stop memory tracking
     tracemalloc.stop()
-    
+    rated_results = []
+    for keyword, latency, paragraph,_, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens in results:
+        rating = rate_paragraph(str(paragraph), client, prompts, llm_config)   
+        rated_results.append((keyword, latency, paragraph, rating, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens))
+        print(f"Keyword: {keyword} | Latency: {latency:.4f} sec | Rating: {rating}/10 | Tokens Used: {total_tokens} | Peak Memory: {peak_memory:.4f} MB | Memory Delta: {memory_diff:.4f} MB")
+
     total_end_time = time.time()
     total_time_taken = total_end_time - total_start_time
     throughput = total_keywords / total_time_taken if total_time_taken > 0 else 0
