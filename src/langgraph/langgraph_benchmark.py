@@ -1,23 +1,14 @@
-import os
 import time
-import sys
-import pandas as pd
 import tracemalloc
 import tiktoken
-from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langgraph.graph import StateGraph
 from typing import TypedDict
 from groq import Groq
-import yaml
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.append(BASE_DIR)
-from save_to_csv import save_results_to_csv
-from rate_paragraph import rate_paragraph
+from config.config_loader import get_config
+from utils.common_functions import save_results_to_csv, rate_paragraph
 from nodes_agents import generate_paragraph
 
-# Load environment variables
-load_dotenv()
 
 class AgentState(TypedDict):
     keyword: str
@@ -61,7 +52,7 @@ def text_generation(test_queries):
         total_tokens = input_tokens + output_tokens  # Total tokens for this request
         total_tokens_used += total_tokens  # Accumulate total token count
         
-        
+
         results.append((query, latency, paragraph, None, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens))
     
     tracemalloc.stop()
@@ -80,31 +71,23 @@ def text_generation(test_queries):
     print(f"Throughput: {throughput:.4f} keywords per second")
     print(f"Total Tokens Used in Benchmark: {total_tokens_used}")
     
-    save_results_to_csv(results, total_keywords, total_time_taken, throughput, total_tokens_used, csv_save, framework="langgraph")
+    save_results_to_csv(rated_results, total_keywords, total_time_taken, throughput, total_tokens_used, csv_save, framework="langgraph")
 
 
-
-DOTENV_PATH = os.path.join(BASE_DIR, ".env")
-load_dotenv(DOTENV_PATH)
-
-# Load config.yaml from the project root
-CONFIG_PATH = os.path.join(BASE_DIR, "config.yaml")
-
-with open(CONFIG_PATH, "r") as file:
-    config = yaml.safe_load(file)
-
+config = get_config()
 llm_config = config["llm"]
 encoder_name = config["tiktoken_encoder"]
 prompts = config["prompts"]
 csv_save = config["csv"]
 benchmark_keywords = config["benchmark"]
 
-client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+
+client = Groq(api_key=config["api_key"])
 
 # LLM Setup
 llm = ChatGroq(
     model=llm_config["langgraph_agent_model"],
-    api_key=os.environ['GROQ_API_KEY'],
+    api_key=config["api_key"],
     temperature=llm_config["temperature"],
     max_tokens=llm_config["max_tokens"],
     )

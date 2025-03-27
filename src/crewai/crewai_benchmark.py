@@ -37,7 +37,6 @@ def text_generation(test_queries):
         end_time = time.time()
 
         latency = end_time - start_time
-        print(response)
 
         # Measure memory usage
         snapshot_after = tracemalloc.take_snapshot()
@@ -75,7 +74,7 @@ def text_generation(test_queries):
     print(f"Total Tokens Used in Benchmark: {total_tokens_used}")
 
     # Save results to CSV
-    save_results_to_csv(results, total_keywords, total_time_taken, throughput, total_tokens, csv_save, framework="crewai")
+    save_results_to_csv(rated_results, total_keywords, total_time_taken, throughput, total_tokens_used, csv_save, framework="crewai")
 
 
 config = get_config()
@@ -86,12 +85,12 @@ prompts = config["prompts"]
 csv_save = config["csv"]
 benchmark_keywords = config["benchmark"]
 
-client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+client = Groq(api_key=config["api_key"])
 
 # LLM Setup
 llm = ChatGroq(
     model=llm_config["crewai_agent_model"],
-    api_key=os.environ['GROQ_API_KEY'],
+    api_key=config["api_key"],
     temperature=llm_config["temperature"],
     max_tokens=llm_config["max_tokens"],
     )

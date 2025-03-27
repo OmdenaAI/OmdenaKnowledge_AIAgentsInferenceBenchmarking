@@ -7,3 +7,5 @@ tiktoken==0.8.0
 crewai==0.100.1
 pyautogen==0.7.6
 -e .
+matplotlib==3.10.0
+numpy==2.2.2

@@ -1,20 +1,12 @@
 import autogen
-import os
 import time
-import sys
 import tracemalloc
-import pandas as pd
 import tiktoken
-from dotenv import load_dotenv
 from groq import Groq
-import yaml
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-sys.path.append(BASE_DIR)
-from save_to_csv import save_results_to_csv
-from rate_paragraph import rate_paragraph
+from config.config_loader import get_config
+from utils.common_functions import save_results_to_csv, rate_paragraph
 from agents import writer_agent
 
-load_dotenv()
 
 # Define the user proxy
 user_proxy = autogen.UserProxyAgent(
@@ -61,7 +53,6 @@ def text_generation(test_queries):
         total_tokens = input_tokens + output_tokens
         total_tokens_used += total_tokens
 
-        print(f"Keyword: {query} | Latency: {latency:.4f} sec | Tokens: {total_tokens} | Peak Memory: {peak_memory:.4f} MB | Memory Delta: {memory_diff:.4f} MB")
         results.append((query, latency, generated_text, None, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens))
     
     tracemalloc.stop()
@@ -70,7 +61,6 @@ def text_generation(test_queries):
     for keyword, latency, paragraph,_, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens in results:
         rating = rate_paragraph(paragraph, client, prompts, llm_config)
         rated_results.append((keyword, latency, paragraph, rating, peak_memory, memory_diff, input_tokens, output_tokens, total_tokens))
-        print(f"Keyword: {keyword} | Rating: {rating}/10 | Tokens Used: {total_tokens} | Peak Memory: {peak_memory:.4f} MB | Memory Delta: {memory_diff:.4f} MB")
 
     total_end_time = time.time()
     total_time_taken = total_end_time - total_start_time
@@ -81,28 +71,21 @@ def text_generation(test_queries):
     print(f"Throughput: {throughput:.4f} keywords per second")
     print(f"Total Tokens Used in Benchmark: {total_tokens_used}")
 
-    save_results_to_csv(results, total_keywords, total_time_taken, throughput, total_tokens, csv_save, framework="autogen")
+    save_results_to_csv(rated_results, total_keywords, total_time_taken, throughput, total_tokens_used, csv_save, framework="autogen")
 
 
-DOTENV_PATH = os.path.join(BASE_DIR, ".env")
-load_dotenv(DOTENV_PATH)
-
-CONFIG_PATH = os.path.join(BASE_DIR, "config.yaml")
-
-with open(CONFIG_PATH, "r") as file:
-    config = yaml.safe_load(file)
-
+config = get_config()
 llm_config = config["llm"]
 encoder_name = config["tiktoken_encoder"]
 prompts = config["prompts"]
 csv_save = config["csv"]
 benchmark_keywords = config["benchmark"]
 
-client = Groq(api_key=os.environ["GROQ_API_KEY"])
+client = Groq(api_key=config["api_key"])
 
 config_list = [{
     "model": llm_config["langgraph_agent_model"],
-    "api_key": os.environ.get("GROQ_API_KEY"),
+    "api_key": config["api_key"],
     "api_type": llm_config["api_type"],
     "temperature": llm_config["temperature"],
     "max_tokens": llm_config["max_tokens"]
