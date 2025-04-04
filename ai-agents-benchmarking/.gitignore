@@ -4,24 +4,25 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Ignore temporary swap files
 *.swp
-
-# Ignore MacOS system files
 .DS_Store
-
-# Ignore virtual environments
 venv/
 .env
 
-s# Ignore CSV files
+# Ignore CSV files
 *.csv
 
 # Ignore PNG files
 *.png
 
-# Ignore results directory (if it stores all generated files)
+# Ignore results directory 
 results/
 
 # Optional: Ignore log files
 *.log
+
+# Ignore the entire coding directory
+coding/
+
+# Ignore file in the parent directory
+../create_dir_files.py
