@@ -1,0 +1,38 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "all_agents_benchmark1",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "args": [
+                "--agents", "all"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            }
+        },
+        {
+            "name": "Debug Test",
+            "type": "debugpy",
+            "request": "launch",
+            "purpose": ["debug-test"],
+            "program": "-m pytest",
+            "args": [
+                "${file}",
+                "-v",
+                "--no-cov",
+                "-s"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}",
+                "PYTEST_ADDOPTS": "--no-cov"
+            }
+        }
+    ]
+} 

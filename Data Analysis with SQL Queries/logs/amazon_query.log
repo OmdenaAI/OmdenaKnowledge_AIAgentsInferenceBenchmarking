@@ -1,0 +1,8 @@
+2025-04-04 13:33:45,431 - amazon_query_processor - INFO - Running benchmark for 3 iterations
+2025-04-04 13:33:45,436 - amazon_query_processor - INFO - Saving results to: C:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-04 13:33:45,437 - amazon_query_processor - INFO - Metrics collector initialized with output dir: C:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-04 13:33:45,437 - amazon_query_processor - INFO - Starting iteration 1/3
+2025-04-04 13:37:12,521 - amazon_query_processor - INFO - Running benchmark for 3 iterations
+2025-04-04 13:37:12,521 - amazon_query_processor - INFO - Saving results to: C:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-04 13:37:12,521 - amazon_query_processor - INFO - Metrics collector initialized with output dir: c:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-04 13:37:12,521 - amazon_query_processor - INFO - Starting iteration 1/3
