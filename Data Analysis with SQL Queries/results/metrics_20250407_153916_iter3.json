@@ -1,0 +1,44 @@
+{
+    "CrewAI": [
+        {
+            "iteration": 0,
+            "start_time": 1744033081.0421376,
+            "api_calls": 1,
+            "retries": 0,
+            "api_latencies": [
+                26.756622552871704
+            ],
+            "latency": 26.760128498077393,
+            "avg_api_latency": 26.756622552871704,
+            "match_percentage": 100.0
+        },
+        {
+            "iteration": 1,
+            "start_time": 1744033107.8022661,
+            "api_calls": 1,
+            "retries": 0,
+            "api_latencies": [
+                22.92001438140869
+            ],
+            "latency": 22.928945302963257,
+            "avg_api_latency": 22.92001438140869,
+            "match_percentage": 100.0
+        },
+        {
+            "iteration": 2,
+            "start_time": 1744033130.732214,
+            "api_calls": 1,
+            "retries": 0,
+            "api_latencies": [
+                26.039442777633667
+            ],
+            "latency": 26.049330472946167,
+            "avg_api_latency": 26.039442777633667,
+            "match_percentage": 100.0
+        },
+        {
+            "iteration": "average",
+            "match_percentage": 100.0
+        }
+    ]
+}
