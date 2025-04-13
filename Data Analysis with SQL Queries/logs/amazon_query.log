@@ -1,0 +1,65 @@
+2025-04-07 12:13:57,048 - amazon_query_processor - INFO - Running benchmark for 3 iterations
+2025-04-07 12:13:57,049 - amazon_query_processor - INFO - Saving results to: C:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-07 12:13:57,051 - amazon_query_processor - INFO - Metrics collector initialized with output dir: C:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-07 12:13:57,051 - amazon_query_processor - INFO - Starting iteration 1/3
+2025-04-07 12:15:02,836 - amazon_query_processor - INFO - Completed iteration 1
+2025-04-07 12:15:02,866 - amazon_query_processor - INFO - Starting iteration 2/3
+2025-04-07 12:17:07,001 - amazon_query_processor - INFO - Completed iteration 2
+2025-04-07 12:17:07,005 - amazon_query_processor - INFO - Starting iteration 3/3
+2025-04-07 12:19:11,258 - amazon_query_processor - INFO - Completed iteration 3
+2025-04-07 12:19:11,260 - amazon_query_processor - INFO - Metrics saved to C:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results\metrics_20250407_121911_iter3.json
+2025-04-07 12:19:12,149 - amazon_query_processor - INFO - Plots saved to C:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results\metrics_20250407_121911_iter3.png
+2025-04-07 12:19:12,192 - amazon_query_processor - INFO - Benchmark completed successfully
+2025-04-07 12:20:49,699 - amazon_query_processor - INFO - Running benchmark for 3 iterations
+2025-04-07 12:20:49,709 - amazon_query_processor - INFO - Saving results to: C:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-07 12:20:49,709 - amazon_query_processor - INFO - Metrics collector initialized with output dir: c:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-07 12:20:49,709 - amazon_query_processor - INFO - Starting iteration 1/3
+2025-04-07 12:20:51,710 - amazon_query_processor - ERROR - Error in workflow: Error code: 400 - {'error': {'message': "Failed to call a function. Please adjust your prompt. See 'failed_generation' for more details.", 'type': 'invalid_request_error', 'code': 'tool_use_failed', 'failed_generation': '<tool-use>{"tool_calls":[{"id":"call_sql","type":"function","function":{"name":"sql_query"},"parameters":{"query":"SELECT ROUND(AVG(rating), 2) AS average_rating FROM amazon_cleaned WHERE category = \'Electronics\'"}}]}</tool-use>'}}
+2025-04-07 12:21:21,696 - amazon_query_processor - INFO - Running benchmark for 3 iterations
+2025-04-07 12:21:21,697 - amazon_query_processor - INFO - Saving results to: C:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-07 12:21:21,698 - amazon_query_processor - INFO - Metrics collector initialized with output dir: c:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-07 12:21:21,698 - amazon_query_processor - INFO - Starting iteration 1/3
+2025-04-07 12:26:24,654 - amazon_query_processor - INFO - Completed iteration 1
+2025-04-07 12:26:24,654 - amazon_query_processor - INFO - Starting iteration 2/3
+2025-04-07 12:32:54,056 - amazon_query_processor - INFO - Completed iteration 2
+2025-04-07 12:32:54,056 - amazon_query_processor - INFO - Starting iteration 3/3
+2025-04-07 12:39:21,844 - amazon_query_processor - INFO - Completed iteration 3
+2025-04-07 12:39:21,845 - amazon_query_processor - INFO - Metrics saved to c:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results\metrics_20250407_123921_iter3.json
+2025-04-07 12:39:23,271 - amazon_query_processor - INFO - Plots saved to c:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results\metrics_20250407_123922_iter3.png
+2025-04-07 12:39:23,287 - amazon_query_processor - INFO - Benchmark completed successfully
+2025-04-07 12:43:29,198 - amazon_query_processor - INFO - Running benchmark for 3 iterations
+2025-04-07 12:43:29,198 - amazon_query_processor - INFO - Saving results to: C:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-07 12:43:29,198 - amazon_query_processor - INFO - Metrics collector initialized with output dir: c:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-07 12:43:29,198 - amazon_query_processor - INFO - Starting iteration 1/3
+2025-04-07 12:43:52,433 - amazon_query_processor - INFO - Completed iteration 1
+2025-04-07 12:43:52,433 - amazon_query_processor - INFO - Starting iteration 2/3
+2025-04-07 12:44:14,741 - amazon_query_processor - INFO - Completed iteration 2
+2025-04-07 12:44:14,742 - amazon_query_processor - INFO - Starting iteration 3/3
+2025-04-07 12:44:39,901 - amazon_query_processor - INFO - Completed iteration 3
+2025-04-07 12:44:39,901 - amazon_query_processor - INFO - Metrics saved to c:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results\metrics_20250407_124439_iter3.json
+2025-04-07 12:44:40,788 - amazon_query_processor - INFO - Plots saved to c:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results\metrics_20250407_124440_iter3.png
+2025-04-07 12:44:40,803 - amazon_query_processor - INFO - Benchmark completed successfully
+2025-04-07 15:12:50,980 - amazon_query_processor - INFO - Running benchmark for 3 iterations
+2025-04-07 15:12:50,984 - amazon_query_processor - INFO - Saving results to: C:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-07 15:12:50,984 - amazon_query_processor - INFO - Metrics collector initialized with output dir: c:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-07 15:12:50,984 - amazon_query_processor - INFO - Starting iteration 1/3
+2025-04-07 15:19:19,557 - amazon_query_processor - INFO - Completed iteration 1
+2025-04-07 15:19:19,567 - amazon_query_processor - INFO - Starting iteration 2/3
+2025-04-07 15:27:04,955 - amazon_query_processor - INFO - Completed iteration 2
+2025-04-07 15:27:04,955 - amazon_query_processor - INFO - Starting iteration 3/3
+2025-04-07 15:34:50,033 - amazon_query_processor - INFO - Completed iteration 3
+2025-04-07 15:34:50,036 - amazon_query_processor - INFO - Metrics saved to c:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results\metrics_20250407_153450_iter3.json
+2025-04-07 15:34:51,573 - amazon_query_processor - INFO - Plots saved to c:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results\metrics_20250407_153450_iter3.png
+2025-04-07 15:34:51,593 - amazon_query_processor - INFO - Benchmark completed successfully
+2025-04-07 15:38:01,033 - amazon_query_processor - INFO - Running benchmark for 3 iterations
+2025-04-07 15:38:01,042 - amazon_query_processor - INFO - Saving results to: C:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-07 15:38:01,042 - amazon_query_processor - INFO - Metrics collector initialized with output dir: c:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results
+2025-04-07 15:38:01,042 - amazon_query_processor - INFO - Starting iteration 1/3
+2025-04-07 15:38:27,802 - amazon_query_processor - INFO - Completed iteration 1
+2025-04-07 15:38:27,802 - amazon_query_processor - INFO - Starting iteration 2/3
+2025-04-07 15:38:50,731 - amazon_query_processor - INFO - Completed iteration 2
+2025-04-07 15:38:50,731 - amazon_query_processor - INFO - Starting iteration 3/3
+2025-04-07 15:39:16,781 - amazon_query_processor - INFO - Completed iteration 3
+2025-04-07 15:39:16,782 - amazon_query_processor - INFO - Metrics saved to c:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results\metrics_20250407_153916_iter3.json
+2025-04-07 15:39:17,601 - amazon_query_processor - INFO - Plots saved to c:\Users\tsvet\OmdenaKnowledge_AIAgentsInferenceBenchmarking\Data Analysis with SQL Queries\results\metrics_20250407_153916_iter3.png
+2025-04-07 15:39:17,601 - amazon_query_processor - INFO - Benchmark completed successfully
