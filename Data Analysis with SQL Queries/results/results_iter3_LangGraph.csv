@@ -1,0 +1,6 @@
+question,answer
+"What is the average rating, rounded to two decimal places, of the products in the category 'Electronics'?",4.08
+How many unique product IDs are there in the table?,1351.0
+Order the products by product_id and return the rating of the first product?,4.1
+How many unique values for 'category' are in the database?,9.0
+What is the maximum value in the column 'discount_percentage' in the table?,94.0
